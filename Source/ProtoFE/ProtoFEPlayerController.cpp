@@ -3,6 +3,8 @@
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "ProtoFECharacter.h"
+#include "Actors/ProtoFECamera.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
@@ -15,11 +17,6 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor)
-	{
-		MoveToMouseCursor();
-	}
 }
 
 void AProtoFEPlayerController::SetupInputComponent()
@@ -27,79 +24,99 @@ void AProtoFEPlayerController::SetupInputComponent()
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AProtoFEPlayerController::OnSetDestinationPressed);
-	InputComponent->BindAction("SetDestination", IE_Released, this, &AProtoFEPlayerController::OnSetDestinationReleased);
+	// camera functions
+	InputComponent->BindAxis("MoveUp", this, &AProtoFEPlayerController::MoveCameraUp);
+	InputComponent->BindAxis("MoveRight", this, &AProtoFEPlayerController::MoveCameraRight);
+	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AProtoFEPlayerController::ZoomCameraIn);
+	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AProtoFEPlayerController::ZoomCameraOut);
+	InputComponent->BindAction("Back", IE_Pressed, this, &AProtoFEPlayerController::SetFastSpeed);
+	InputComponent->BindAction("Back", IE_Released, this, &AProtoFEPlayerController::SetNormalSpeed);
 
-	// support touch devices 
-	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AProtoFEPlayerController::MoveToTouchLocation);
-	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AProtoFEPlayerController::MoveToTouchLocation);
-
-	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AProtoFEPlayerController::OnResetVR);
 }
 
-void AProtoFEPlayerController::MoveToMouseCursor()
+void AProtoFEPlayerController::BeginPlay() 
 {
-	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
-	{
-		if (AProtoFECharacter* MyPawn = Cast<AProtoFECharacter>(GetPawn()))
-		{
-			if (MyPawn->GetCursorToWorld())
-			{
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MyPawn->GetCursorToWorld()->GetComponentLocation());
-			}
-		}
-	}
-	else
-	{
-		// Trace to see what is under the mouse cursor
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+	Super::BeginPlay();
 
-		if (Hit.bBlockingHit)
-		{
-			// We hit something, move there
-			SetNewMoveDestination(Hit.ImpactPoint);
-		}
-	}
+	CameraActor = Cast<AProtoFECamera>(GetPawn());
+	check(CameraActor);
 }
 
-void AProtoFEPlayerController::MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AProtoFEPlayerController::MoveCameraUp(float Value) 
 {
-	FVector2D ScreenSpaceLocation(Location);
-
-	// Trace to see what is under the touch location
-	FHitResult HitResult;
-	GetHitResultAtScreenPosition(ScreenSpaceLocation, CurrentClickTraceChannel, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		// We hit something, move there
-		SetNewMoveDestination(HitResult.ImpactPoint);
-	}
+	if (Value == 0.0f) return;
+	float Speed = Value * 1.5f * CurrentCameraPanSpeed + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value);
+	GetPawn()->AddActorWorldOffset(FVector(Speed, 0, 0)); // This probably won't work right when the camera rotates. I might have to use local offset and account for the angle of the camera
 }
 
-void AProtoFEPlayerController::SetNewMoveDestination(const FVector DestLocation)
+void AProtoFEPlayerController::MoveCameraRight(float Value) 
 {
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
-
-		// We need to issue move command only if far enough in order for walk animation to play correctly
-		if ((Distance > 120.0f))
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
-		}
-	}
+	if (Value == 0.0f) return;
+	float Speed = Value * 1.5f * CurrentCameraPanSpeed + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value);
+	GetPawn()->AddActorLocalOffset(FVector(0, Speed, 0));
 }
 
-void AProtoFEPlayerController::OnSetDestinationPressed()
+void AProtoFEPlayerController::ZoomCameraIn() 
 {
-	// set flag to keep updating destination until released
-	bMoveToMouseCursor = true;
+	float NewLength = FMath::Clamp<float>(CameraActor->GetCameraBoom()->TargetArmLength - ZoomAmount, CameraZoomLowerBound, CameraZoomUpperBound);
+	CameraActor->GetCameraBoom()->TargetArmLength = NewLength;
 }
 
-void AProtoFEPlayerController::OnSetDestinationReleased()
+void AProtoFEPlayerController::ZoomCameraOut() 
 {
-	// clear flag to indicate we should stop updating the destination
-	bMoveToMouseCursor = false;
+	float NewLength = FMath::Clamp<float>(CameraActor->GetCameraBoom()->TargetArmLength + ZoomAmount, CameraZoomLowerBound, CameraZoomUpperBound);
+	CameraActor->GetCameraBoom()->TargetArmLength = NewLength;	
 }
+
+void AProtoFEPlayerController::SetFastSpeed() 
+{
+	CurrentCameraPanSpeed = FastCameraPanMultiplier;
+}
+
+void AProtoFEPlayerController::SetNormalSpeed() 
+{
+	CurrentCameraPanSpeed = NormalCameraPanMultiplier;
+}
+
+// void AProtoFEPlayerController::MoveToMouseCursor()
+// {
+// 	// Trace to see what is under the mouse cursor
+// 	FHitResult Hit;
+// 	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+
+// 	if (Hit.bBlockingHit)
+// 	{
+// 		// We hit something, move there
+// 		SetNewMoveDestination(Hit.ImpactPoint);
+// 	}
+// }
+
+// void AProtoFEPlayerController::SetNewMoveDestination(const FVector DestLocation)
+// {
+// 	APawn* const MyPawn = GetPawn();
+// 	if (MyPawn)
+// 	{
+// 		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
+
+// 		// We need to issue move command only if far enough in order for walk animation to play correctly
+// 		if ((Distance > 120.0f))
+// 		{
+// 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
+// 		}
+// 	}
+// }
+
+// void AProtoFEPlayerController::OnSetDestinationPressed()
+// {
+// 	// set flag to keep updating destination until released
+// 	bMoveToMouseCursor = true;
+// }
+
+// void AProtoFEPlayerController::OnSetDestinationReleased()
+// {
+// 	// clear flag to indicate we should stop updating the destination
+// 	bMoveToMouseCursor = false;
+// }
+
+
+
