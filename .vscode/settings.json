@@ -1,0 +1,7 @@
+{
+	"files.exclude": {
+		"E:/UE4 Projects/ProtoFE/.vscode": true,
+		"E:/UE4 Projects/ProtoFE/Content": true,
+		"E:/UE4 Projects/ProtoFE/Intermediate": true
+	}
+}
