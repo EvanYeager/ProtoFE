@@ -6,11 +6,13 @@
 #include "Actors/ProtoFECamera.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Engine/World.h"
+#include "Actors/GridManager.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+	// UE_LOG(LogTemp, Warning, TEXT("%i"), AGridManager::Grid Grid.Find(FIntPoint(1, 1))->TileNumber);
 }
 
 void AProtoFEPlayerController::PlayerTick(float DeltaTime)
@@ -46,7 +48,11 @@ void AProtoFEPlayerController::MoveCameraUp(float Value)
 {
 	if (Value == 0.0f) return;
 	float Speed = Value * 1.5f * CurrentCameraPanSpeed + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value);
-	GetPawn()->AddActorWorldOffset(FVector(Speed, 0, 0)); // This probably won't work right when the camera rotates. I might have to use local offset and account for the angle of the camera
+	// I have to jump through hoops to move the camera up locally because of the camera's rotation on the pitch
+	float Pitch = FMath::Abs(CameraActor->GetCameraBoom()->GetTargetRotation().Pitch);
+	float PercentZ = Pitch / 90;
+	float PercentX = 1 - PercentZ;
+	GetPawn()->AddActorLocalOffset(FVector(PercentX * Speed, 0, PercentZ * Speed));
 }
 
 void AProtoFEPlayerController::MoveCameraRight(float Value) 
