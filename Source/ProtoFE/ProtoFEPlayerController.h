@@ -5,6 +5,7 @@
 #include "ProtoFEPlayerController.generated.h"
 
 class AProtoFECamera;
+class ATile;
 
 UCLASS()
 class AProtoFEPlayerController : public APlayerController
@@ -36,19 +37,8 @@ protected:
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 
-	// /** Navigate player to the current mouse cursor location. */
-	// void MoveToMouseCursor();
-	
-	// /** Navigate player to the given world location. */
-	// void SetNewMoveDestination(const FVector DestLocation);
-
-	// /** Input handlers for SetDestination action. */
-	// void OnSetDestinationPressed();
-	// void OnSetDestinationReleased();	
-
 private:
 	AProtoFECamera* CameraActor;
-
 	float CurrentCameraPanSpeed = NormalCameraPanMultiplier;
 
 	void MoveCameraUp(float Value);
@@ -58,6 +48,12 @@ private:
 	void SetFastSpeed();
 	void SetNormalSpeed();
 
+
+	UPROPERTY()
+	/** current tile under cursor. May be null. */
+	ATile* SelectedTile;
+
+	void HighlightTile();
 	
 };
 

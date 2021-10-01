@@ -5,20 +5,22 @@
 #include "ProtoFECharacter.h"
 #include "Actors/ProtoFECamera.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Actors/GridManager.h"
+#include "Actors/Tile.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
-	// UE_LOG(LogTemp, Warning, TEXT("%i"), AGridManager::Grid Grid.Find(FIntPoint(1, 1))->TileNumber);
 }
 
 void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
+	HighlightTile();
 }
 
 void AProtoFEPlayerController::SetupInputComponent()
@@ -47,7 +49,7 @@ void AProtoFEPlayerController::BeginPlay()
 void AProtoFEPlayerController::MoveCameraUp(float Value) 
 {
 	if (Value == 0.0f) return;
-	float Speed = Value * 1.5f * CurrentCameraPanSpeed + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value);
+	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
 	// I have to jump through hoops to move the camera up locally because of the camera's rotation on the pitch
 	float Pitch = FMath::Abs(CameraActor->GetCameraBoom()->GetTargetRotation().Pitch);
 	float PercentZ = Pitch / 90;
@@ -58,7 +60,7 @@ void AProtoFEPlayerController::MoveCameraUp(float Value)
 void AProtoFEPlayerController::MoveCameraRight(float Value) 
 {
 	if (Value == 0.0f) return;
-	float Speed = Value * 1.5f * CurrentCameraPanSpeed + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value);
+	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
 	GetPawn()->AddActorLocalOffset(FVector(0, Speed, 0));
 }
 
@@ -82,6 +84,24 @@ void AProtoFEPlayerController::SetFastSpeed()
 void AProtoFEPlayerController::SetNormalSpeed() 
 {
 	CurrentCameraPanSpeed = NormalCameraPanMultiplier;
+}
+
+void AProtoFEPlayerController::HighlightTile() 
+{
+	// unhighlight previously selected tile, that way if cursor goes off the grid the previous tile will not stay highlighted
+	if (SelectedTile)
+		SelectedTile->Plane->SetVisibility(false);
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
+	{
+		if (ATile* Tile = Cast<ATile>(Hit.GetActor()))
+		{
+			SelectedTile = Tile;
+			Tile->Plane->SetVisibility(true);
+		}
+	}
+	else SelectedTile = nullptr;
 }
 
 // void AProtoFEPlayerController::MoveToMouseCursor()

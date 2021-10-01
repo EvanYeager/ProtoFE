@@ -3,6 +3,7 @@
 #include "UObject\ConstructorHelpers.h"
 #include "Actors/Tile.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/StaticMeshComponent.h"
 
 
 // Sets default values
@@ -19,6 +20,10 @@ AGridManager::AGridManager()
 
 void AGridManager::OnConstruction(const FTransform& Transform) 
 {
+	for (ATile* Tile : TileActors)
+	{
+		Tile->Plane->SetVisibility(ShowTileColorInEditor);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -71,5 +76,11 @@ void AGridManager::CreateGrid()
 			// SpawnParams.Name = FName("Tile%i", ++count);
 			TileActors.Add(GetWorld()->SpawnActor<ATile>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams));
 		}
+	}
+
+	// set color & whatnot
+	for (ATile* Tile : TileActors)
+	{
+		Tile->Plane->SetVisibility(ShowTileColorInEditor);
 	}
 }

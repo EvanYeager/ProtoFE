@@ -1,6 +1,7 @@
 #include "ProtoFECamera.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/PlayerController.h"
 
 
 // Sets default values

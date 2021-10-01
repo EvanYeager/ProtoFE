@@ -61,6 +61,8 @@ public:
 	int GridX = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	int GridY = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
+	bool ShowTileColorInEditor = true;
 	
 
 	UFUNCTION(BlueprintCallable)
@@ -77,5 +79,6 @@ private:
 	TSubclassOf<ATile> TileClass;
 	TArray<ATile*> TileActors;
 	const int PlaneLength = 120;
+
 
 };
