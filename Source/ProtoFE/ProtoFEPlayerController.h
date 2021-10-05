@@ -15,6 +15,9 @@ class AProtoFEPlayerController : public APlayerController
 public:
 	AProtoFEPlayerController();
 
+	UUserWidget* DisplayWidget(TSubclassOf<UUserWidget> WidgetClass);
+	void RemoveWidget(UUserWidget* Widget);
+
 	// Camera settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
 	float NormalCameraPanMultiplier = 1.0f;

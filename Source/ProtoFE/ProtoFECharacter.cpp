@@ -6,11 +6,18 @@
 #include "GameFramework/PlayerController.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "ProtoFEPlayerController.h"
+#include "UI/StatsWindowParent.h"
+#include "Components/SkeletalMeshComponent.h"
+
 
 AProtoFECharacter::AProtoFECharacter()
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -23,36 +30,52 @@ AProtoFECharacter::AProtoFECharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	// Create a decal in the world to show the cursor's location
-	CursorToWorld = CreateDefaultSubobject<UDecalComponent>("CursorToWorld");
-	CursorToWorld->SetupAttachment(RootComponent);
-	static ConstructorHelpers::FObjectFinder<UMaterial> DecalMaterialAsset(TEXT("Material'/Game/TopDownCPP/Blueprints/M_Cursor_Decal.M_Cursor_Decal'"));
-	if (DecalMaterialAsset.Succeeded())
-	{
-		CursorToWorld->SetDecalMaterial(DecalMaterialAsset.Object);
-	}
-	CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
-	CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
-
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	
+	ConstructorHelpers::FClassFinder<UUserWidget> StatsWindow(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/CursorOver_StatsWindow'"));
+	if (StatsWindow.Succeeded())
+		StatsWindowClass = StatsWindow.Class;
+
+
+}
+
+void AProtoFECharacter::BeginPlay() 
+{
+	Super::BeginPlay();
+	// on cursor over
+	// GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::DisplayStats);
+	// GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::RemoveStats);
+
+	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::DisplayStats);
+	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::RemoveStats);
 }
 
 void AProtoFECharacter::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
+   Super::Tick(DeltaSeconds);
 
-	if (CursorToWorld != nullptr)
+	
+}
+
+
+void AProtoFECharacter::DisplayStats(UPrimitiveComponent* comp) 
+{
+	if (!StatsWindowClass) return;
+	if (AProtoFEPlayerController* Controller = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
-		if (APlayerController* PC = Cast<APlayerController>(GetController()))
-		{
-			FHitResult TraceHitResult;
-			PC->GetHitResultUnderCursor(ECC_Visibility, true, TraceHitResult);
-			FVector CursorFV = TraceHitResult.ImpactNormal;
-			FRotator CursorR = CursorFV.Rotation();
-			CursorToWorld->SetWorldLocation(TraceHitResult.Location);
-			CursorToWorld->SetWorldRotation(CursorR);
-		}
+		StatsWindow = Cast<UStatsWindowParent>(Controller->DisplayWidget(StatsWindowClass));
+		if (!StatsWindow) return;
+		StatsWindow->Info = Information; // sets data to be displayed in widget
 	}
 }
+
+void AProtoFECharacter::RemoveStats(UPrimitiveComponent* comp)
+{
+	if (AProtoFEPlayerController* Controller = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	{
+		Controller->RemoveWidget(StatsWindow);
+	}
+}
+ 

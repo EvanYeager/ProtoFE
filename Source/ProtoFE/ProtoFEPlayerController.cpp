@@ -9,12 +9,16 @@
 #include "Engine/World.h"
 #include "Actors/GridManager.h"
 #include "Actors/Tile.h"
+#include "UserWidget.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
+	bEnableMouseOverEvents = true;
 }
+
+
 
 void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 {
@@ -44,6 +48,19 @@ void AProtoFEPlayerController::BeginPlay()
 
 	CameraActor = Cast<AProtoFECamera>(GetPawn());
 	check(CameraActor);
+}
+
+UUserWidget* AProtoFEPlayerController::DisplayWidget(TSubclassOf<UUserWidget> WidgetClass) 
+{
+	UUserWidget* Widget = CreateWidget<UUserWidget>(this, WidgetClass);
+	Widget->AddToViewport();
+	return Widget;
+}
+
+void AProtoFEPlayerController::RemoveWidget(UUserWidget* Widget) 
+{
+	if (!Widget) return;
+	Widget->RemoveFromParent();
 }
 
 void AProtoFEPlayerController::MoveCameraUp(float Value) 
