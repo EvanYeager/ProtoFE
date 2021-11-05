@@ -2,9 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Actors/GridManager.h"
+#include "Interfaces/GridOccupy.h"
 #include "ProtoFECharacter.generated.h"
 
 class UStatsWindowParent;
+class UUserWidget;
+class USnapToGrid;
+class UGridOccupyComponent;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -95,7 +100,7 @@ struct FCharacterInfo
 };
 
 UCLASS(Blueprintable)
-class AProtoFECharacter : public ACharacter
+class AProtoFECharacter : public ACharacter, public IGridOccupy
 {
 	GENERATED_BODY()
 
@@ -105,13 +110,27 @@ public:
 	// Called every frame.
 	virtual void Tick(float DeltaSeconds) override;
 
+	UPROPERTY(VisibleAnywhere)
+	UGridOccupyComponent* GridOccupyComponent;
+	UPROPERTY(VisibleAnywhere)
+	USnapToGrid* GridSnapComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterInfo Information = FCharacterInfo();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<ETerrain, int> TerrainMoveCost;
+
+	// runs when the mouse clicks on character
+	virtual void SelectCharacter();
+
+	virtual void OccupyTile(FIntPoint NewTile) override;
 
 	// TODO items
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void PostEditMove(bool bFinished) override;
 
 private:
 	UFUNCTION()
@@ -120,6 +139,6 @@ private:
 	virtual void RemoveStats(UPrimitiveComponent* comp);
 
 	TSubclassOf<UUserWidget> StatsWindowClass;
-	UStatsWindowParent* StatsWindow;
+	UStatsWindowParent* StatsWindowWidget;
 };
 

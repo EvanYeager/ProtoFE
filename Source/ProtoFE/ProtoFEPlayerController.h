@@ -4,8 +4,11 @@
 #include "GameFramework/PlayerController.h"
 #include "ProtoFEPlayerController.generated.h"
 
-class AProtoFECamera;
+class UCameraControllerComponent;
 class ATile;
+class APlayerCharacter;
+class AGridManager;
+class UPathfinder;
 
 UCLASS()
 class AProtoFEPlayerController : public APlayerController
@@ -15,48 +18,41 @@ class AProtoFEPlayerController : public APlayerController
 public:
 	AProtoFEPlayerController();
 
+	UPROPERTY()
+	AGridManager* GridManager;
+	
 	UUserWidget* DisplayWidget(TSubclassOf<UUserWidget> WidgetClass);
 	void RemoveWidget(UUserWidget* Widget);
 
-	// Camera settings
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
-	float NormalCameraPanMultiplier = 1.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
-	float FastCameraPanMultiplier = 2.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
-	float ZoomAmount = 60.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
-	float CameraZoomLowerBound = 500.0f; // The camera cannot get closer than this distance from the ground
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
-	float CameraZoomUpperBound = 1400.0f; // The camera cannot get further away than this distance from the ground
+	void FocusCharacter(APlayerCharacter* Char);
+
+	UFUNCTION(BlueprintCallable)
+	APlayerCharacter* GetSelectedCharacter();
+
+	UPathfinder* Pathfinder;
 
 
 
 protected:
-	/** True if the controlled character should navigate to the mouse cursor. */
-	bool bMoveToMouseCursor = true;
-
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 
 private:
-	AProtoFECamera* CameraActor;
-	float CurrentCameraPanSpeed = NormalCameraPanMultiplier;
-
-	void MoveCameraUp(float Value);
-	void MoveCameraRight(float Value);
-	void ZoomCameraIn();
-	void ZoomCameraOut();
-	void SetFastSpeed();
-	void SetNormalSpeed();
-
+	UPROPERTY()
+	UCameraControllerComponent* CameraController;
 
 	UPROPERTY()
 	/** current tile under cursor. May be null. */
 	ATile* SelectedTile;
 
+	/** player character that is currently selected, if there is one. May be null. */
+	APlayerCharacter* SelectedCharacter = nullptr;
+
 	void HighlightTile();
+	void Click();
+
+	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
 	
 };
 

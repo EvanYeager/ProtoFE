@@ -10,12 +10,14 @@
 #include "ProtoFEPlayerController.h"
 #include "UI/StatsWindowParent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SnapToGrid.h"
+#include "Components/GridOccupyComponent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
 {
 	// Set size for player capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->InitCapsuleSize(1.0f, 1.0f);
 
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 
@@ -30,6 +32,8 @@ AProtoFECharacter::AProtoFECharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
+	GetCapsuleComponent()->SetVisibility(false);
+
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -38,16 +42,33 @@ AProtoFECharacter::AProtoFECharacter()
 	if (StatsWindow.Succeeded())
 		StatsWindowClass = StatsWindow.Class;
 
+	// terrain move cost
+	TerrainMoveCost.Add(ETerrain::Normal, 1);
+	TerrainMoveCost.Add(ETerrain::Foliage, 2);
+	TerrainMoveCost.Add(ETerrain::Water, 3);
+	TerrainMoveCost.Add(ETerrain::Mountains, 4);
+	TerrainMoveCost.Add(ETerrain::Impossible, 999);
 
+	GridOccupyComponent = CreateDefaultSubobject<UGridOccupyComponent>(TEXT("Grid Occupy Component"));
+	GridSnapComponent = CreateDefaultSubobject<USnapToGrid>(TEXT("Grid Snap Component"));
+}
+
+void AProtoFECharacter::PostEditMove(bool bFinished)
+{
+	Super::PostEditMove(bFinished);
+
+	if (bFinished)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("about to occupy tile. Occupied tile is %s"), *GridOccupyComponent->OccupiedTile.ToString());
+		GridSnapComponent->SnapToClosestTile();
+	}
 }
 
 void AProtoFECharacter::BeginPlay() 
 {
 	Super::BeginPlay();
+	
 	// on cursor over
-	// GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::DisplayStats);
-	// GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::RemoveStats);
-
 	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::DisplayStats);
 	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::RemoveStats);
 }
@@ -56,26 +77,37 @@ void AProtoFECharacter::Tick(float DeltaSeconds)
 {
    Super::Tick(DeltaSeconds);
 
-	
 }
 
+void AProtoFECharacter::SelectCharacter() {}
+
+void AProtoFECharacter::OccupyTile(FIntPoint NewTile)
+{
+	if (GridOccupyComponent->OccupiedTile.operator!=(FIntPoint(0, 0))) // if OccupiedTile is not the default
+		AGridManager::GetGrid(GetWorld())->Find(GridOccupyComponent->OccupiedTile)->OccupiedBy = nullptr; // delete from old tile
+
+	// add on new tile
+	AGridManager::GetGrid(GetWorld())->Find(NewTile)->OccupiedBy = this;
+	GridOccupyComponent->OccupiedTile = NewTile;
+}
 
 void AProtoFECharacter::DisplayStats(UPrimitiveComponent* comp) 
 {
 	if (!StatsWindowClass) return;
-	if (AProtoFEPlayerController* Controller = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
-		StatsWindow = Cast<UStatsWindowParent>(Controller->DisplayWidget(StatsWindowClass));
-		if (!StatsWindow) return;
-		StatsWindow->Info = Information; // sets data to be displayed in widget
+		StatsWindowWidget = Cast<UStatsWindowParent>(PlayerController->DisplayWidget(StatsWindowClass));
+		if (!StatsWindowWidget) return;
+		StatsWindowWidget->Info = Information; // sets data to be displayed in widget
 	}
 }
 
 void AProtoFECharacter::RemoveStats(UPrimitiveComponent* comp)
 {
-	if (AProtoFEPlayerController* Controller = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
-		Controller->RemoveWidget(StatsWindow);
+		PlayerController->RemoveWidget(StatsWindowWidget);
 	}
 }
+
  

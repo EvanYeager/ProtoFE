@@ -6,6 +6,7 @@
 
 class AProtoFECharacter;
 class ATile;
+class ITerrainMod;
 
 UENUM(BlueprintType)
 enum class ETerrain : uint8
@@ -13,7 +14,8 @@ enum class ETerrain : uint8
 	Normal UMETA(DisplayName="Normal"),
 	Foliage UMETA(DisplayName="Foliage"),
 	Water UMETA(DisplayName="Water"),
-	Mountains UMETA(DisplayName="Moutains")	
+	Mountains UMETA(DisplayName="Moutains"),
+	Impossible UMETA(DisplayName="Impossible")
 };
 
 USTRUCT(BlueprintType)
@@ -27,6 +29,10 @@ struct FGridData
 		this->TileNumber = TileNumber;
 	}
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ATile* Tile = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TScriptInterface<ITerrainMod> TerrainMod = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AProtoFECharacter* OccupiedBy = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -58,15 +64,19 @@ public:
 	TMap<FIntPoint, FGridData> Grid;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
-	int GridX = 10;
+	int GridX = 18;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
-	int GridY = 10;
+	int GridY = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	bool ShowTileColorInEditor = true;
 	
+	const int PlaneLength = 120;
 
 	UFUNCTION(BlueprintCallable)
-	virtual void CreateGrid();
+	void CreateGrid();
+	static FIntPoint GetTileWithLocation(UWorld* WorldContext, FVector Location);
+
+	static TMap<FIntPoint, FGridData>* GetGrid(UWorld* WorldContext);
 
 protected:
 	// Called when the game starts or when spawned
@@ -77,8 +87,7 @@ protected:
 
 private:
 	TSubclassOf<ATile> TileClass;
-	TArray<ATile*> TileActors;
-	const int PlaneLength = 120;
+
 
 
 };

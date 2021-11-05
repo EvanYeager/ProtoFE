@@ -9,6 +9,10 @@ class PROTOFE_API APlayerCharacter : public AProtoFECharacter
 {
 	GENERATED_BODY()
 
+
+public:
 	APlayerCharacter();
+	
+	virtual void SelectCharacter() override;
 	
 };

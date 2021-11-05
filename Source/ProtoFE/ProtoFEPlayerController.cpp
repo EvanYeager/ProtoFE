@@ -1,21 +1,26 @@
 #include "ProtoFEPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Runtime/Engine/Classes/Components/DecalComponent.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
 #include "ProtoFECharacter.h"
-#include "Actors/ProtoFECamera.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Actors/GridManager.h"
 #include "Actors/Tile.h"
 #include "UserWidget.h"
+#include "Components/CameraControllerComponent.h"
+#include "Components/Pathfinder.h" 
+#include "Actors/Characters/PlayerCharacter.h"
+#include "Kismet/GameplayStatics.h"
+#include "Actors/GridManager.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 	bEnableMouseOverEvents = true;
+
+	CameraController = CreateDefaultSubobject<UCameraControllerComponent>(TEXT("Camera Controller"));
+	Pathfinder = CreateDefaultSubobject<UPathfinder>(TEXT("Pathfinder"));
 }
 
 
@@ -33,21 +38,23 @@ void AProtoFEPlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	// camera functions
-	InputComponent->BindAxis("MoveUp", this, &AProtoFEPlayerController::MoveCameraUp);
-	InputComponent->BindAxis("MoveRight", this, &AProtoFEPlayerController::MoveCameraRight);
-	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AProtoFEPlayerController::ZoomCameraIn);
-	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AProtoFEPlayerController::ZoomCameraOut);
-	InputComponent->BindAction("Back", IE_Pressed, this, &AProtoFEPlayerController::SetFastSpeed);
-	InputComponent->BindAction("Back", IE_Released, this, &AProtoFEPlayerController::SetNormalSpeed);
-
+	InputComponent->BindAxis("MoveUp", CameraController, &UCameraControllerComponent::MoveCameraUp);
+	InputComponent->BindAxis("MoveRight", CameraController, &UCameraControllerComponent::MoveCameraRight);
+	InputComponent->BindAction("ZoomIn", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraIn);
+	InputComponent->BindAction("ZoomOut", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraOut);
+	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
+	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
+	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::Click);
 }
 
 void AProtoFEPlayerController::BeginPlay() 
 {
 	Super::BeginPlay();
 
-	CameraActor = Cast<AProtoFECamera>(GetPawn());
-	check(CameraActor);
+	TArray<AActor*> Temp;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGridManager::StaticClass(), Temp);
+	GridManager = Cast<AGridManager>(Temp[0]);
+
 }
 
 UUserWidget* AProtoFEPlayerController::DisplayWidget(TSubclassOf<UUserWidget> WidgetClass) 
@@ -63,49 +70,19 @@ void AProtoFEPlayerController::RemoveWidget(UUserWidget* Widget)
 	Widget->RemoveFromParent();
 }
 
-void AProtoFEPlayerController::MoveCameraUp(float Value) 
+APlayerCharacter* AProtoFEPlayerController::GetSelectedCharacter()
 {
-	if (Value == 0.0f) return;
-	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
-	// I have to jump through hoops to move the camera up locally because of the camera's rotation on the pitch
-	float Pitch = FMath::Abs(CameraActor->GetCameraBoom()->GetTargetRotation().Pitch);
-	float PercentZ = Pitch / 90;
-	float PercentX = 1 - PercentZ;
-	GetPawn()->AddActorLocalOffset(FVector(PercentX * Speed, 0, PercentZ * Speed));
+	return SelectedCharacter;
 }
 
-void AProtoFEPlayerController::MoveCameraRight(float Value) 
+void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedChar)
 {
-	if (Value == 0.0f) return;
-	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
-	GetPawn()->AddActorLocalOffset(FVector(0, Speed, 0));
-}
-
-void AProtoFEPlayerController::ZoomCameraIn() 
-{
-	float NewLength = FMath::Clamp<float>(CameraActor->GetCameraBoom()->TargetArmLength - ZoomAmount, CameraZoomLowerBound, CameraZoomUpperBound);
-	CameraActor->GetCameraBoom()->TargetArmLength = NewLength;
-}
-
-void AProtoFEPlayerController::ZoomCameraOut() 
-{
-	float NewLength = FMath::Clamp<float>(CameraActor->GetCameraBoom()->TargetArmLength + ZoomAmount, CameraZoomLowerBound, CameraZoomUpperBound);
-	CameraActor->GetCameraBoom()->TargetArmLength = NewLength;	
-}
-
-void AProtoFEPlayerController::SetFastSpeed() 
-{
-	CurrentCameraPanSpeed = FastCameraPanMultiplier;
-}
-
-void AProtoFEPlayerController::SetNormalSpeed() 
-{
-	CurrentCameraPanSpeed = NormalCameraPanMultiplier;
+	SelectedCharacter = SelectedChar;
 }
 
 void AProtoFEPlayerController::HighlightTile() 
 {
-	// unhighlight previously selected tile, that way if cursor goes off the grid the previous tile will not stay highlighted
+	// unhighlight previously selected tile
 	if (SelectedTile)
 		SelectedTile->Plane->SetVisibility(false);
 
@@ -116,10 +93,37 @@ void AProtoFEPlayerController::HighlightTile()
 		{
 			SelectedTile = Tile;
 			Tile->Plane->SetVisibility(true);
+			Tile->SetColor(EHighlightColor::DefaultHighlight);
+			if (GetSelectedCharacter())
+				Tile->SetStrength(EHighlightStrength::Strong);
 		}
 	}
 	else SelectedTile = nullptr;
 }
+
+void AProtoFEPlayerController::Click() 
+{
+	if (GetSelectedCharacter())
+	{
+		SetSelectedCharacter(nullptr);
+	}
+	else
+	{
+		FHitResult Hit;
+		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
+		{
+			if (AProtoFECharacter* CharacterClicked = Cast<AProtoFECharacter>(Hit.GetActor())) // if click hit a character
+				CharacterClicked->SelectCharacter();
+		}
+	}
+}
+
+void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
+{
+	SetSelectedCharacter(Char);
+	CameraController->FocusLocation(Char->GetActorLocation());
+}
+
 
 // void AProtoFEPlayerController::MoveToMouseCursor()
 // {

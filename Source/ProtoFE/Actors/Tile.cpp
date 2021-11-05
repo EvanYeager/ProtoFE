@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "ConstructorHelpers.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 // Sets default values
 ATile::ATile()
@@ -21,6 +22,8 @@ ATile::ATile()
 	Plane->SetStaticMesh(PlaneMesh);
 	Plane->SetRelativeScale3D(FVector(1, 1, .06f));
 
+
+
 }
 
 // Called when the game starts or when spawned
@@ -29,6 +32,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 
 	Plane->SetVisibility(false);
+ 	Material = Plane->CreateDynamicMaterialInstance(0, Plane->GetMaterial(0));
 	
 }
 
@@ -39,3 +43,44 @@ void ATile::Tick(float DeltaTime)
 
 }
 
+void ATile::SetColor(EHighlightColor Color)
+{
+	if (!Material) return;
+	FLinearColor _Color = DefaultHighlight;
+	switch (Color)
+	{
+	case EHighlightColor::EnemyRange:
+		_Color = EnemyRange;
+		break;
+	case EHighlightColor::RedHighlight:
+		_Color = RedHighlight;
+		break;
+	case EHighlightColor::BlueHighlight:
+		_Color = BlueHighlight;
+		break;
+	
+	default:
+		break;
+	}
+	Material->SetVectorParameterValue("Color", _Color);
+	SetStrength(EHighlightStrength::Normal); // reset to normal strength; this might not be the best way to do this
+}
+
+void ATile::SetStrength(EHighlightStrength Strength)
+{
+	if (!Material) return;
+	float Opacity = NormalStrength;
+	switch (Strength)
+	{
+	case EHighlightStrength::Strong:
+		Opacity = StrongStrength;
+		break;
+	case EHighlightStrength::Weak:
+		Opacity = WeakStrength;
+		break;
+	
+	default:
+		break;
+	}
+	Material->SetScalarParameterValue("Strength", Opacity);
+}

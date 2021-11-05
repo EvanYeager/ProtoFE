@@ -19,10 +19,11 @@ AGridManager::AGridManager()
 
 
 void AGridManager::OnConstruction(const FTransform& Transform) 
-{
-	for (ATile* Tile : TileActors)
+{	
+	for (auto& Element : Grid)
 	{
-		Tile->Plane->SetVisibility(ShowTileColorInEditor);
+		if (Element.Value.Tile)
+			Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
 	}
 }
 
@@ -41,13 +42,12 @@ void AGridManager::Tick(float DeltaTime)
 
 }
 
-void AGridManager::CreateGrid() 
+void AGridManager::CreateGrid()
 {
 	Grid.Empty();
-	TileActors.Empty();
-	// create grid data
 	TMap<FIntPoint, FVector> Locations;
 	int count = 0;
+	// create vars
 	for (int y = 1; y <= GridY; y++)
 	{
 		for (int x = 1; x <= GridX; x++)
@@ -73,14 +73,31 @@ void AGridManager::CreateGrid()
 		for (auto& Element : Locations)
 		{
 			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-			// SpawnParams.Name = FName("Tile%i", ++count);
-			TileActors.Add(GetWorld()->SpawnActor<ATile>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams));
+			Grid.Find(Element.Key)->Tile = GetWorld()->SpawnActor<ATile>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
 		}
 	}
 
 	// set color & whatnot
-	for (ATile* Tile : TileActors)
+	for (auto& Element : Grid)
 	{
-		Tile->Plane->SetVisibility(ShowTileColorInEditor);
+		Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
 	}
+}
+
+FIntPoint AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
+{
+	for (auto& Tile : *AGridManager::GetGrid(WorldContext))
+	{
+		if (Location.Equals(Tile.Value.Tile->GetActorLocation(), 40.0f))
+			return Tile.Key;
+	}
+	return FIntPoint(0, 0);
+}
+
+TMap<FIntPoint, FGridData>* AGridManager::GetGrid(UWorld* WorldContext)
+{
+	TArray<AActor*> Temp;
+	UGameplayStatics::GetAllActorsOfClass(WorldContext, AGridManager::StaticClass(), Temp);
+	if (Temp.Num() == 0) return new TMap<FIntPoint, FGridData>();
+	return &Cast<AGridManager>(Temp[0])->Grid;
 }

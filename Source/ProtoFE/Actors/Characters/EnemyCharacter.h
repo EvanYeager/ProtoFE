@@ -9,6 +9,8 @@ class PROTOFE_API AEnemyCharacter : public AProtoFECharacter
 {
 	GENERATED_BODY()
 
+public:
 	AEnemyCharacter();
 	
+	virtual void SelectCharacter() override;
 };
