@@ -31,7 +31,6 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
       TArray<AProtoFECharacter*> Chars;
       TArray<FIntPoint> MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       MovementTiles.Append(RedTiles);
-      UE_LOG(LogTemp, Warning, TEXT("%i"), MovementTiles.Num());
       TMap<FIntPoint, FGridData>* Grid = AGridManager::GetGrid(GetWorld());
       for (FIntPoint Tile : MovementTiles)
       {
