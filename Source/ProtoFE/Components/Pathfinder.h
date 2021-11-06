@@ -102,5 +102,5 @@ private:
 	TArray<FIntPoint> RedTiles;
 	bool IsPlayerPathfinding;
 		
-	AGridManager* GridManager;
+	TMap<FIntPoint, FGridData>* Grid;
 };

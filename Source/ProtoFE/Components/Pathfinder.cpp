@@ -22,7 +22,7 @@ void UPathfinder::BeginPlay()
 
 FGridData* UPathfinder::GetTileStruct(FIntPoint Tile)
 {
-	return GridManager->Grid.Find(Tile);
+	return Grid->Find(Tile);
 }
 
 bool UPathfinder::IsTileOccupied(FIntPoint Tile)
@@ -93,7 +93,7 @@ TArray<FIntPoint> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling
 	FIntPoint StartTile = CharacterCalling->GridOccupyComponent->OccupiedTile; 
 	Queue.Add(StartTile);
 	ValidTiles.Add(StartTile);
-	GridManager = Owner->GridManager;
+	Grid = AGridManager::GetGrid(GetWorld());
 	ResetFinalCosts();
 
 	for (int32 i = 0; i < NumOfPossibleTiles; i++)
@@ -133,7 +133,7 @@ int32 UPathfinder::GetMovementOptionArea(int32 Movement)
 
 void UPathfinder::ResetFinalCosts()
 {
-	for(auto& Elem : GridManager->Grid)
+	for(auto& Elem : *Grid)
 	{
 		GetTileStruct(Elem.Key)->FinalCost = 0;
 	}
@@ -241,7 +241,7 @@ TArray<FIntPoint> UPathfinder::FindPathToTarget(TArray<FIntPoint> AvailableMovem
 
 void UPathfinder::ResetPathfindingTileVars()
 {
-	for (auto& Element : GridManager->Grid)
+	for (auto& Element : *Grid)
 	{
 		FGridData* TileStruct = GetTileStruct(Element.Key);
 		TileStruct->FinalCost = 0;

@@ -132,11 +132,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostEditMove(bool bFinished) override;
 
+	UFUNCTION()
+	virtual void OnCursorOver(UPrimitiveComponent* comp);
+	UFUNCTION()
+	virtual void EndCursorOver(UPrimitiveComponent* comp);
+	UFUNCTION()
+	virtual void DisplayStats();
+	UFUNCTION()
+	virtual void RemoveStats();
 private:
-	UFUNCTION()
-	virtual void DisplayStats(UPrimitiveComponent* comp);
-	UFUNCTION()
-	virtual void RemoveStats(UPrimitiveComponent* comp);
 
 	TSubclassOf<UUserWidget> StatsWindowClass;
 	UStatsWindowParent* StatsWindowWidget;

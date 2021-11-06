@@ -21,7 +21,6 @@ void APlayerCharacter::SelectCharacter()
       TArray<AProtoFECharacter*> Chars;
       TArray<FIntPoint> TilesInRange = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       
-      UE_LOG(LogTemp, Warning, TEXT("%i"), TilesInRange.Num());
       for (auto& Tile : TilesInRange)
       {
          Grid->Find(Tile)->Tile->Plane->SetVisibility(true);

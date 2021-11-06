@@ -69,8 +69,8 @@ void AProtoFECharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// on cursor over
-	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::DisplayStats);
-	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::RemoveStats);
+	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
+	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
 }
 
 void AProtoFECharacter::Tick(float DeltaSeconds)
@@ -80,6 +80,16 @@ void AProtoFECharacter::Tick(float DeltaSeconds)
 }
 
 void AProtoFECharacter::SelectCharacter() {}
+
+void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
+{
+	DisplayStats();
+}
+
+void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
+{
+	RemoveStats();
+}
 
 void AProtoFECharacter::OccupyTile(FIntPoint NewTile)
 {
@@ -91,7 +101,7 @@ void AProtoFECharacter::OccupyTile(FIntPoint NewTile)
 	GridOccupyComponent->OccupiedTile = NewTile;
 }
 
-void AProtoFECharacter::DisplayStats(UPrimitiveComponent* comp) 
+void AProtoFECharacter::DisplayStats() 
 {
 	if (!StatsWindowClass) return;
 	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
@@ -102,7 +112,7 @@ void AProtoFECharacter::DisplayStats(UPrimitiveComponent* comp)
 	}
 }
 
-void AProtoFECharacter::RemoveStats(UPrimitiveComponent* comp)
+void AProtoFECharacter::RemoveStats()
 {
 	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
