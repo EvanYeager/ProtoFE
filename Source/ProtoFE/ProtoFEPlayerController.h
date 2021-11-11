@@ -5,7 +5,7 @@
 #include "ProtoFEPlayerController.generated.h"
 
 class UCameraControllerComponent;
-class ATile;
+class ATileActor;
 class APlayerCharacter;
 class AGridManager;
 class UPathfinder;
@@ -44,7 +44,7 @@ private:
 
 	UPROPERTY()
 	/** current tile under cursor. May be null. */
-	ATile* SelectedTile;
+	ATileActor* SelectedTile;
 
 	/** player character that is currently selected, if there is one. May be null. */
 	APlayerCharacter* SelectedCharacter = nullptr;

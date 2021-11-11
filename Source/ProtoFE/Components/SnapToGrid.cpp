@@ -1,7 +1,7 @@
 #include "SnapToGrid.h"
 #include "Kismet/GameplayStatics.h"
 #include "Actors/GridManager.h"
-#include "Actors/Tile.h"
+#include "Actors/TileActor.h"
 #include "Actors/TerrainModifiers/TerrainMod.h"
 #include "Kismet/KismetMathLibrary.h"
 

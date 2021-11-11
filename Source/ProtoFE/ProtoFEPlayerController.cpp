@@ -5,7 +5,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
 #include "Actors/GridManager.h"
-#include "Actors/Tile.h"
+#include "Actors/TileActor.h"
 #include "UserWidget.h"
 #include "Components/CameraControllerComponent.h"
 #include "Components/Pathfinder.h" 
@@ -89,7 +89,7 @@ void AProtoFEPlayerController::HighlightTile()
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
-		if (ATile* Tile = Cast<ATile>(Hit.GetActor()))
+		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
 		{
 			SelectedTile = Tile;
 			Tile->Plane->SetVisibility(true);

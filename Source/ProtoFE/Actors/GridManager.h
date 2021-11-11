@@ -5,7 +5,7 @@
 #include "GridManager.generated.h"
 
 class AProtoFECharacter;
-class ATile;
+class ATileActor;
 class ITerrainMod;
 
 UENUM(BlueprintType)
@@ -30,7 +30,7 @@ struct FGridData
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ATile* Tile = nullptr;
+	ATileActor* Tile = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TScriptInterface<ITerrainMod> TerrainMod = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -86,7 +86,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	TSubclassOf<ATile> TileClass;
+	TSubclassOf<ATileActor> TileClass;
 
 
 

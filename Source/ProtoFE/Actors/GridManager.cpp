@@ -1,7 +1,7 @@
 #include "GridManager.h"
 #include "Engine/World.h"
 #include "UObject\ConstructorHelpers.h"
-#include "Actors/Tile.h"
+#include "Actors/TileActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -12,7 +12,7 @@ AGridManager::AGridManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	ConstructorHelpers::FClassFinder<AActor> TileMesh(TEXT("/Game/TopDownCPP/Blueprints/Actors/TileBP"));
+	ConstructorHelpers::FClassFinder<AActor> TileMesh(TEXT("/Game/TopDownCPP/Blueprints/Actors/TileActorBP"));
 	if (TileMesh.Succeeded())
 		TileClass = TileMesh.Class;
 }
@@ -60,7 +60,7 @@ void AGridManager::CreateGrid()
 
 	// remove existing tiles
 	TArray<AActor*> Tiles;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATile::StaticClass(), Tiles);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATileActor::StaticClass(), Tiles);
 	for (AActor* Tile : Tiles)
 	{
 		Tile->Destroy();
@@ -73,14 +73,14 @@ void AGridManager::CreateGrid()
 		for (auto& Element : Locations)
 		{
 			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-			Grid.Find(Element.Key)->Tile = GetWorld()->SpawnActor<ATile>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
+			Grid.Find(Element.Key)->Tile = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
 		}
-	}
-
-	// set color & whatnot
-	for (auto& Element : Grid)
-	{
-		Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
+	
+		// set color & whatnot
+		for (auto& Element : Grid)
+		{
+			Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
+		}
 	}
 }
 

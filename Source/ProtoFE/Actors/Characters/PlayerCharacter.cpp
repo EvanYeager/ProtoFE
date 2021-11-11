@@ -2,7 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ProtoFEPlayerController.h"
 #include "Components/Pathfinder.h"
-#include "Actors/Tile.h"
+#include "Actors/TileActor.h"
 #include "Components/StaticMeshComponent.h"
 
 APlayerCharacter::APlayerCharacter() 
