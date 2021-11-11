@@ -35,9 +35,9 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
       for (FIntPoint Tile : MovementTiles)
       {
          FGridData* TileInfo = Grid->Find(Tile);
-         TileInfo->Tile->Plane->SetVisibility(true);
-         TileInfo->Tile->SetColor(EHighlightColor::EnemyRange);
-         TileInfo->Tile->SetStrength(EHighlightStrength::Weak);
+         TileInfo->TileActor->Plane->SetVisibility(true);
+         TileInfo->TileActor->SetColor(EHighlightColor::EnemyRange);
+         TileInfo->TileActor->SetStrength(EHighlightStrength::Weak);
       }
    }
 }

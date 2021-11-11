@@ -30,7 +30,7 @@ struct FGridData
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ATileActor* Tile = nullptr;
+	ATileActor* TileActor = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TScriptInterface<ITerrainMod> TerrainMod = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

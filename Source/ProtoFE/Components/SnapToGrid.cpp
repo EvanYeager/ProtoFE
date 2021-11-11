@@ -55,7 +55,7 @@ void USnapToGrid::SnapToClosestTile()
 	const FIntPoint Offset = FIntPoint(1, 1);
 	if (!GridManager->Grid.Find(TilesAway + Offset)) return;
 
-	GetOwner()->SetActorLocation(AGridManager::GetGrid(GetWorld())->Find(TilesAway + Offset)->Tile->GetActorLocation());
+	GetOwner()->SetActorLocation(AGridManager::GetGrid(GetWorld())->Find(TilesAway + Offset)->TileActor->GetActorLocation());
 
 	if (IGridOccupy* OwnerAsGridOccupy = Cast<IGridOccupy>(GetOwner()))
 		OwnerAsGridOccupy->OccupyTile(TilesAway + Offset);

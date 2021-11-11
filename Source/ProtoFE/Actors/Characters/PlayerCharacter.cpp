@@ -23,14 +23,14 @@ void APlayerCharacter::SelectCharacter()
       
       for (auto& Tile : TilesInRange)
       {
-         Grid->Find(Tile)->Tile->Plane->SetVisibility(true);
-         Grid->Find(Tile)->Tile->SetColor(EHighlightColor::BlueHighlight);
+         Grid->Find(Tile)->TileActor->Plane->SetVisibility(true);
+         Grid->Find(Tile)->TileActor->SetColor(EHighlightColor::BlueHighlight);
       }
       for (auto& Tile : RedTiles)
       {
          FGridData* TileData = Grid->Find(Tile);
-         TileData->Tile->Plane->SetVisibility(true);
-         TileData->Tile->SetColor(EHighlightColor::RedHighlight);
+         TileData->TileActor->Plane->SetVisibility(true);
+         TileData->TileActor->SetColor(EHighlightColor::RedHighlight);
       }
    }
 }

@@ -22,8 +22,8 @@ void AGridManager::OnConstruction(const FTransform& Transform)
 {	
 	for (auto& Element : Grid)
 	{
-		if (Element.Value.Tile)
-			Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
+		if (Element.Value.TileActor)
+			Element.Value.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
 	}
 }
 
@@ -73,13 +73,13 @@ void AGridManager::CreateGrid()
 		for (auto& Element : Locations)
 		{
 			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-			Grid.Find(Element.Key)->Tile = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
+			Grid.Find(Element.Key)->TileActor = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
 		}
 	
 		// set color & whatnot
 		for (auto& Element : Grid)
 		{
-			Element.Value.Tile->Plane->SetVisibility(ShowTileColorInEditor);
+			Element.Value.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
 		}
 	}
 }
@@ -88,7 +88,7 @@ FIntPoint AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Locati
 {
 	for (auto& Tile : *AGridManager::GetGrid(WorldContext))
 	{
-		if (Location.Equals(Tile.Value.Tile->GetActorLocation(), 40.0f))
+		if (Location.Equals(Tile.Value.TileActor->GetActorLocation(), 40.0f))
 			return Tile.Key;
 	}
 	return FIntPoint(0, 0);
