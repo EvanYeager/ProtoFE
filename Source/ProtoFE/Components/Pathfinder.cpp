@@ -1,6 +1,6 @@
 #include "Pathfinder.h"
 #include "ProtoFECharacter.h"
-#include "Actors/GridManager.h"
+// #include "Actors/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProtoFEPlayerController.h"
 #include "Actors/TerrainModifiers/TerrainMod.h"
@@ -20,29 +20,25 @@ void UPathfinder::BeginPlay()
 	check(Owner);
 }
 
-FGridData* UPathfinder::GetTileStruct(FIntPoint Tile)
+bool UPathfinder::IsTileOccupied(UTile* Tile)
 {
-	return Grid->Find(Tile);
-}
-
-bool UPathfinder::IsTileOccupied(FIntPoint Tile)
-{
-	return IsValid(GetTileStruct(Tile)->OccupiedBy);
+	return IsValid(Tile->Data.OccupiedBy);
 }
 
 bool UPathfinder::IsCurrentTileOccupiedByPlayer()
 {
-	return IsTileOccupied(CurrentTile) && GetTileStruct(CurrentTile)->OccupiedBy->Information.Team == ETeam::Player; // IsTileOccupied() is there to protect from nullptrs
+	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Player; // IsTileOccupied() is there to protect from nullptrs
 }
 
 bool UPathfinder::IsCurrentTileOccupiedByEnemy()
 {
-	return IsTileOccupied(CurrentTile) && GetTileStruct(CurrentTile)->OccupiedBy->Information.Team == ETeam::Enemy; // IsTileOccupied() is there to protect from nullptrs
+	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Enemy; // IsTileOccupied() is there to protect from nullptrs
 }
 
-TArray<FIntPoint> UPathfinder::GetTileNeighbors(FIntPoint Tile, bool IncludePlayers, bool IncludeEnemies)
+TArray<UTile*> UPathfinder::GetTileNeighbors(UTile* Tile, bool IncludePlayers, bool IncludeEnemies)
 {
-	TArray<FIntPoint> OutNeighbors;
+	TArray<UTile*> OutNeighbors;
+	if (!Tile) return OutNeighbors;
 	TArray<FIntPoint> CardinalDirections = 
 	{
 		FIntPoint(0, 1),  // Up
@@ -53,7 +49,9 @@ TArray<FIntPoint> UPathfinder::GetTileNeighbors(FIntPoint Tile, bool IncludePlay
 
 	for (FIntPoint Direction : CardinalDirections)
 	{
-		FIntPoint AdjacentTile = Tile + Direction;
+		FIntPoint NeighborCoords = Tile->Data.Coordinates + Direction;
+		UTile* AdjacentTile = AGridManager::GetTileWithCoords(NeighborCoords, Grid);
+		if (!AdjacentTile) continue;
 
 		if(MovementArea.Num() > 0) // This checks if the MovementArea array has data. It only should when this is called in the FindPathToTarget function
 		{
@@ -62,12 +60,11 @@ TArray<FIntPoint> UPathfinder::GetTileNeighbors(FIntPoint Tile, bool IncludePlay
 				goto EVALUATE;
 			}
 		}
-		else if (GetTileStruct(AdjacentTile))
+		else if (AdjacentTile)
 		{
 			EVALUATE:if (IsTileOccupied(AdjacentTile))
 			{
-				FGridData* AdjacentTileStruct = GetTileStruct(AdjacentTile);
-				AProtoFECharacter* Char = AdjacentTileStruct->OccupiedBy;
+				AProtoFECharacter* Char = AdjacentTile->Data.OccupiedBy;
 				if (!IncludePlayers ^ (Char->Information.Team == ETeam::Player) || IncludeEnemies ^ (Char->Information.Team == ETeam::Player)) // Returns true if both booleans are the same, i.e. char is a player and include players, or if an enemy and include enemies
 				{
 					OutNeighbors.AddUnique(AdjacentTile);
@@ -83,23 +80,23 @@ TArray<FIntPoint> UPathfinder::GetTileNeighbors(FIntPoint Tile, bool IncludePlay
 }
 
 
-TArray<FIntPoint> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling, TArray<FIntPoint>& TilesToMakeRed, TArray<AProtoFECharacter*>& CharsInRange)
+TArray<UTile*> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling, TArray<UTile*>& TilesToMakeRed, TArray<AProtoFECharacter*>& CharsInRange)
 {
 	ClearMemberVariables();
 	CharacterPathfinding = CharacterCalling;
 	MaxMovement = CharacterCalling->Information.Movement;
 	NumOfPossibleTiles = GetMovementOptionArea(MaxMovement + 1); // The + 1 is so it will search for the red highlights
 	IsPlayerPathfinding = CharacterCalling->Information.Team == ETeam::Player;
-	FIntPoint StartTile = CharacterCalling->GridOccupyComponent->OccupiedTile; 
+	UTile* StartTile = CharacterCalling->GridOccupyComponent->OccupiedTile;
 	Queue.Add(StartTile);
 	ValidTiles.Add(StartTile);
-	Grid = AGridManager::GetGrid(GetWorld());
+	Grid = *AGridManager::GetGrid(GetWorld());
 	ResetFinalCosts();
 
 	for (int32 i = 0; i < NumOfPossibleTiles; i++)
 	{
 		if (Queue.Num() == 0) break;
-		for (FIntPoint NeighborTile : GetTileNeighbors(Queue[0]))
+		for (UTile* NeighborTile : GetTileNeighbors(Queue[0]))
 		{
 			CurrentTile = NeighborTile;
 			EvaluateCurrentTileForBreadthSearch();
@@ -133,23 +130,25 @@ int32 UPathfinder::GetMovementOptionArea(int32 Movement)
 
 void UPathfinder::ResetFinalCosts()
 {
-	for(auto& Elem : *Grid)
+	for(FGridRow Row : Grid)
 	{
-		GetTileStruct(Elem.Key)->FinalCost = 0;
+		for (UTile* Tile : Row.Tiles)
+		{
+			Tile->FinalCost = 0;
+		}
 	}
 }
 
 void UPathfinder::EvaluateCurrentTileForBreadthSearch()
 {
-	CurrentTileStruct = GetTileStruct(CurrentTile);
-	MoveCost = GetTileStruct(Queue[0])->FinalCost;
-	MoveCost += *CharacterPathfinding->TerrainMoveCost.Find(CurrentTileStruct->Terrain); // add terrain move cost for character
+	MoveCost = Queue[0]->FinalCost;
+	MoveCost += *CharacterPathfinding->TerrainMoveCost.Find(CurrentTile->Data.Terrain); // add terrain move cost for character
 	if (TileShouldBeRed())
 	{
 		RedTiles.AddUnique(CurrentTile);
 		if (EnemyIsPathfindingAndCurrentTileIsOccupiedByPlayer())
 		{
-			CharsFound.AddUnique(CurrentTileStruct->OccupiedBy);
+			CharsFound.AddUnique(CurrentTile->Data.OccupiedBy);
 		}
 	}
 	else if (CurrentTileIsWalkable())
@@ -161,7 +160,7 @@ void UPathfinder::EvaluateCurrentTileForBreadthSearch()
 bool UPathfinder::TileShouldBeRed()
 {
 	return MoveCost > MaxMovement || // Tile outside movement range
-	CurrentTileStruct->Terrain == ETerrain::Impossible ||
+	CurrentTile->Data.Terrain == ETerrain::Impossible ||
 	PlayerIsPathfindingAndCurrentTileIsOccupiedByEnemy() ||
 	EnemyIsPathfindingAndCurrentTileIsOccupiedByPlayer();
 }
@@ -179,21 +178,21 @@ bool UPathfinder::EnemyIsPathfindingAndCurrentTileIsOccupiedByPlayer()
 void UPathfinder::AddCurrentTileToValidTiles()
 {
 	Queue.AddUnique(CurrentTile);
-	CurrentTileStruct->FinalCost = MoveCost;
+	CurrentTile->FinalCost = MoveCost;
 	ValidTiles.AddUnique(CurrentTile);
 }
 
 bool UPathfinder::CurrentTileIsWalkable()
 {
 	return MoveCost <= MaxMovement && (!ValidTiles.Contains(CurrentTile) || 
-	MoveCost < CurrentTileStruct->FinalCost);
+	MoveCost < CurrentTile->FinalCost);
 }
 
 void UPathfinder::FilterRedTiles() 
 {
-	TArray<FIntPoint> Filtered;
+	TArray<UTile*> Filtered;
 	// find red tiles to filter
-	for (FIntPoint RedTile : RedTiles)
+	for (UTile* RedTile : RedTiles)
 	{
 		if (ValidTiles.Contains(RedTile))
 		{
@@ -201,7 +200,7 @@ void UPathfinder::FilterRedTiles()
 		}
 	}
 	// remove them
-	for (FIntPoint ToRemove : Filtered)
+	for (UTile* ToRemove : Filtered)
 	{
 		RedTiles.Remove(ToRemove);
 	}
@@ -212,7 +211,7 @@ void UPathfinder::FilterRedTiles()
 ========================================== */
 
 
-TArray<FIntPoint> UPathfinder::FindPathToTarget(TArray<FIntPoint> AvailableMovementArea, FIntPoint StartTile, FIntPoint TargetTile, bool IsPlayerCalling)
+TArray<UTile*> UPathfinder::FindPathToTarget(TArray<UTile*> AvailableMovementArea, UTile* StartTile, UTile* TargetTile, bool IsPlayerCalling)
 {
 	if (StartTile == TargetTile)
 	{
@@ -228,9 +227,8 @@ TArray<FIntPoint> UPathfinder::FindPathToTarget(TArray<FIntPoint> AvailableMovem
 	DestinationTile = TargetTile;
 	IsPlayerPathfinding = IsPlayerCalling;
 	int32 EstimatedCost = GetEstimatedCostToTile(DestinationTile);
-	CurrentTileStruct = GetTileStruct(CurrentTile);
-	CurrentTileStruct->FinalCost = EstimatedCost;
-	CurrentTileStruct->EstimatedCostToTarget = EstimatedCost;
+	CurrentTile->FinalCost = EstimatedCost;
+	CurrentTile->EstimatedCostToTarget = EstimatedCost;
 	Queue.AddUnique(InitialTile);
 
 	Pathfind();
@@ -241,13 +239,15 @@ TArray<FIntPoint> UPathfinder::FindPathToTarget(TArray<FIntPoint> AvailableMovem
 
 void UPathfinder::ResetPathfindingTileVars()
 {
-	for (auto& Element : *Grid)
+	for (FGridRow Row : Grid)
 	{
-		FGridData* TileStruct = GetTileStruct(Element.Key);
-		TileStruct->FinalCost = 0;
-		TileStruct->CostFromStart = 0;
-		TileStruct->EstimatedCostToTarget = 0;
-		TileStruct->PreviousTileCoords = FIntPoint(0, 0);
+		for (UTile* Tile : Row.Tiles)
+		{
+			Tile->FinalCost = 0;
+			Tile->CostFromStart = 0;
+			Tile->EstimatedCostToTarget = 0;
+			Tile->PreviousTile = nullptr;
+		}
 	}
 }
 
@@ -258,13 +258,13 @@ void UPathfinder::Pathfind()
 		CurrentTile = FindCheapestInQueue();
 		Queue.Remove(CurrentTile);
 		EstablishedTiles.AddUnique(CurrentTile);
-		TArray<FIntPoint> Neighbors = GetTileNeighbors(CurrentTile, IsPlayerPathfinding, !IsPlayerPathfinding);
-		for (FIntPoint CurrentNeighbor : Neighbors)
+		TArray<UTile*> Neighbors = GetTileNeighbors(CurrentTile, IsPlayerPathfinding, !IsPlayerPathfinding);
+		for (UTile* CurrentNeighbor : Neighbors)
 		{
 			if (!EstablishedTiles.Contains(CurrentNeighbor) ||
-			FinalCostFromCurrentNeighbor < GetTileStruct(CurrentNeighbor)->CostFromStart)
+			FinalCostFromCurrentNeighbor < CurrentNeighbor->CostFromStart)
 			{
-				FinalCostFromCurrentNeighbor = GetTileStruct(CurrentTile)->CostFromStart + *CharacterPathfinding->TerrainMoveCost.Find(GetTileStruct(CurrentNeighbor)->Terrain);
+				FinalCostFromCurrentNeighbor = CurrentTile->CostFromStart + *CharacterPathfinding->TerrainMoveCost.Find(CurrentNeighbor->Data.Terrain);
 				SetTileVariables(CurrentTile, CurrentNeighbor);
 				if (CurrentNeighbor == DestinationTile)
 				{
@@ -277,20 +277,18 @@ void UPathfinder::Pathfind()
 	}
 }
 
-int32 UPathfinder::GetEstimatedCostToTile(FIntPoint Tile)
+int32 UPathfinder::GetEstimatedCostToTile(UTile* Tile)
 {
-	FIntPoint TempDistance = Tile - DestinationTile;
+	FIntPoint TempDistance = Tile->Data.Coordinates - DestinationTile->Data.Coordinates;
 	FIntPoint FinalDistance = FIntPoint(abs(TempDistance.X), abs(TempDistance.Y));
 	return int32(FinalDistance.X + FinalDistance.Y);
 }
 
-FIntPoint UPathfinder::FindCheapestInQueue()
+UTile* UPathfinder::FindCheapestInQueue()
 {
-	FIntPoint QueueCheapest = Queue[0];
-	for (FIntPoint Element : Queue)
+	UTile* QueueCheapest = Queue[0];
+	for (UTile* Element : Queue)
 	{
-		FGridData* QueueElemStruct = GetTileStruct(Element);
-		FGridData* QueueCheapestStruct = GetTileStruct(QueueCheapest);
 		if (QueueElementIsBetterThanQueueCheapest(Element, QueueCheapest))
 		{
 			QueueCheapest = Element;
@@ -299,35 +297,32 @@ FIntPoint UPathfinder::FindCheapestInQueue()
 	return QueueCheapest;
 }
 
-bool UPathfinder::QueueElementIsBetterThanQueueCheapest(FIntPoint QueueElem, FIntPoint QueueCheapest)
+bool UPathfinder::QueueElementIsBetterThanQueueCheapest(UTile* QueueElem, UTile* QueueCheapest)
 {
-	FGridData* QueueElemStruct = GetTileStruct(QueueElem);
-	FGridData* QueueCheapestStruct = GetTileStruct(QueueCheapest);
 	// Conditions for being true: QueueElem FinalCost is less than QueueCheapest's, or if they are equal but QueueElem is closer to destination
-	return (QueueElemStruct->FinalCost < QueueCheapestStruct->FinalCost) || 
-	(QueueElemStruct->FinalCost == QueueCheapestStruct->FinalCost && 
-	QueueElemStruct->EstimatedCostToTarget < QueueCheapestStruct->EstimatedCostToTarget);
+	return (QueueElem->FinalCost < QueueCheapest->FinalCost) || 
+	(QueueElem->FinalCost == QueueCheapest->FinalCost && 
+	QueueElem->EstimatedCostToTarget < QueueCheapest->EstimatedCostToTarget);
 }
 
-void UPathfinder::SetTileVariables(FIntPoint PreviousTile, FIntPoint CurrentNeighbor)
+void UPathfinder::SetTileVariables(UTile* PreviousTile, UTile* CurrentNeighbor)
 {
-	FGridData* CurrentNeighborStruct = GetTileStruct(CurrentNeighbor);
-	CurrentNeighborStruct->FinalCost = FinalCostFromCurrentNeighbor + *CharacterPathfinding->TerrainMoveCost.Find(CurrentNeighborStruct->Terrain);
-	CurrentNeighborStruct->CostFromStart = FinalCostFromCurrentNeighbor;
-	CurrentNeighborStruct->EstimatedCostToTarget = GetEstimatedCostToTile(CurrentNeighbor);
-	CurrentNeighborStruct->PreviousTileCoords = PreviousTile;
+	CurrentNeighbor->FinalCost = FinalCostFromCurrentNeighbor + *CharacterPathfinding->TerrainMoveCost.Find(CurrentNeighbor->Data.Terrain);
+	CurrentNeighbor->CostFromStart = FinalCostFromCurrentNeighbor;
+	CurrentNeighbor->EstimatedCostToTarget = GetEstimatedCostToTile(CurrentNeighbor);
+	CurrentNeighbor->PreviousTile = PreviousTile;
 }
 
-TArray<FIntPoint> UPathfinder::RetracePath()
+TArray<UTile*> UPathfinder::RetracePath()
 {
-	TArray<FIntPoint> InvertedPath;
-	TArray<FIntPoint> OutPath;
+	TArray<UTile*> InvertedPath;
+	TArray<UTile*> OutPath;
 	CurrentTile = DestinationTile;
 
 	while (CurrentTile != InitialTile)
 	{
 		InvertedPath.AddUnique(CurrentTile);
-		CurrentTile = GetTileStruct(CurrentTile)->PreviousTileCoords;
+		CurrentTile = CurrentTile->PreviousTile;
 	}
 	for (int32 i = InvertedPath.Num() - 1; i >= 0; i--)
 	{
@@ -337,32 +332,27 @@ TArray<FIntPoint> UPathfinder::RetracePath()
 }
 
 
-TArray<FIntPoint> UPathfinder::FindPathAsEnemy(FIntPoint StartTile, TArray<FIntPoint> PossibleTargetTiles)
+TArray<UTile*> UPathfinder::FindPathAsEnemy(UTile* StartTile, TArray<UTile*> PossibleTargetTiles)
 {
-	TArray<FIntPoint> CurrentPath,
+	TArray<UTile*> CurrentPath,
 	BestPath;
 	int32 CurrentPathCost,
 	BestPathCost = 999;
-	for(FIntPoint TargetTileElement : PossibleTargetTiles)
+	for(UTile* TargetTileElement : PossibleTargetTiles)
 	{
-		TArray<FIntPoint> Argument;
+		TArray<UTile*> Argument;
 		CurrentPath = FindPathToTarget(Argument, StartTile, TargetTileElement, false);
-		CurrentPathCost = GetTileStruct(CurrentPath.Last())->FinalCost; // Make sure to keep the pathfinding variables non-zero after pathfinding so I can use this outside the function
-		if (IsThisFirstEnemyPathfind(BestPath))
+		CurrentPathCost = CurrentPath.Last()->FinalCost; // Make sure to keep the pathfinding variables non-zero after pathfinding so I can use this outside the function
+		if (IsThisFirstEnemyPathfind(BestPath) || CurrentPathCost < BestPathCost)
 		{
 			BestPath = CurrentPath;
-			BestPathCost = GetTileStruct(BestPath.Last())->FinalCost;
-		}
-		else if (CurrentPathCost < BestPathCost)
-		{
-			BestPath = CurrentPath;
-			BestPathCost = GetTileStruct(BestPath.Last())->FinalCost;
+			BestPathCost = BestPath.Last()->FinalCost;
 		}
 	}
 	return BestPath;
 }
 
-bool UPathfinder::IsThisFirstEnemyPathfind(TArray<FIntPoint> BestPath)
+bool UPathfinder::IsThisFirstEnemyPathfind(TArray<UTile*> BestPath)
 {
 	return !BestPath.IsValidIndex(0);
 }

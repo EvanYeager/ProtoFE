@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Actors/GridManager.h"
+#include "Tile.h"
 #include "Interfaces/GridOccupy.h"
 #include "TerrainMod.generated.h"
 

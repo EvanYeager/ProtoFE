@@ -4,6 +4,8 @@
 #include "Components/Pathfinder.h"
 #include "Actors/TileActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Tile.h"
+#include "Components/GridOccupyComponent.h"
 
 APlayerCharacter::APlayerCharacter() 
 {
@@ -15,22 +17,21 @@ void APlayerCharacter::SelectCharacter()
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      TMap<FIntPoint, FGridData>* Grid = AGridManager::GetGrid(GetWorld());
+      if (!GridOccupyComponent->OccupiedTile) return;
       PlayerController->FocusCharacter(this);
-      TArray<FIntPoint> RedTiles;
+      TArray<UTile*> RedTiles;
       TArray<AProtoFECharacter*> Chars;
-      TArray<FIntPoint> TilesInRange = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
+      TArray<UTile*> TilesInRange = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       
-      for (auto& Tile : TilesInRange)
+      for (UTile* Tile : TilesInRange)
       {
-         Grid->Find(Tile)->TileActor->Plane->SetVisibility(true);
-         Grid->Find(Tile)->TileActor->SetColor(EHighlightColor::BlueHighlight);
+         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->SetColor(EHighlightColor::BlueHighlight);
       }
-      for (auto& Tile : RedTiles)
+      for (UTile* Tile : RedTiles)
       {
-         FGridData* TileData = Grid->Find(Tile);
-         TileData->TileActor->Plane->SetVisibility(true);
-         TileData->TileActor->SetColor(EHighlightColor::RedHighlight);
+         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->SetColor(EHighlightColor::RedHighlight);
       }
    }
 }

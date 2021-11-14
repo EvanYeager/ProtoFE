@@ -2,12 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Actors/GridManager.h"
 #include "Pathfinder.generated.h"
 
 class AProtoFECharacter;
-struct FGridData;
+// struct FGridRow;
 class AGridManager;
 class AProtoFEPlayerController;
+class UTile;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOFE_API UPathfinder : public UActorComponent
@@ -22,34 +24,32 @@ public:
 	UPROPERTY(EditAnywhere)
 	AProtoFEPlayerController* Owner;
 
-	bool IsTileOccupied(FIntPoint Tile);
+	bool IsTileOccupied(UTile* Tile);
 
 	bool IsCurrentTileOccupiedByPlayer();
 
 	UFUNCTION(BlueprintCallable, BluePrintPure, Category = "Utility")
 	bool IsCurrentTileOccupiedByEnemy();
 
-	FGridData* GetTileStruct(FIntPoint Tile);
-
 	UFUNCTION(BlueprintCallable, BluePrintPure)
 	// This overload is for general use
-	TArray<FIntPoint> GetTileNeighbors(FIntPoint Tile, bool IncludePlayers = true, bool IncludeEnemies = true);
+	TArray<UTile*> GetTileNeighbors(UTile* Tile, bool IncludePlayers = true, bool IncludeEnemies = true);
 
 	UFUNCTION(BlueprintCallable, Category = "Grid Struct")
 	void ResetPathfindingTileVars();
 
 	UFUNCTION(BlueprintCallable)
 	// Returns: Tiles outside movement range to make red if player is calling, Chars found if enemy is calling, and return value is the valid movement area.
-	TArray<FIntPoint> BreadthSearch(AProtoFECharacter* CharacterCalling, TArray<FIntPoint>& TilesToMakeRed, TArray<AProtoFECharacter*>& CharsInRange);
+	TArray<UTile*> BreadthSearch(AProtoFECharacter* CharacterCalling, TArray<UTile*>& TilesToMakeRed, TArray<AProtoFECharacter*>& CharsInRange);
 
-	TArray<FIntPoint> RetracePath();
+	TArray<UTile*> RetracePath();
 
 	UFUNCTION(BlueprintCallable)
 	// IsPlayerCalling is true if a player character is pathfinding, false if an enemy is. This way if an enemy calls this they can go through other enemies.
-	TArray<FIntPoint> FindPathToTarget(TArray<FIntPoint> AvailableMovementArea, FIntPoint StartTile, FIntPoint TargetTile, bool IsPlayerCalling = true); 
+	TArray<UTile*> FindPathToTarget(TArray<UTile*> AvailableMovementArea, UTile* StartTile, UTile* TargetTile, bool IsPlayerCalling = true); 
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FIntPoint> FindPathAsEnemy(FIntPoint StartTile, TArray<FIntPoint> PossibleTargetTiles);
+	TArray<UTile*> FindPathAsEnemy(UTile* StartTile, TArray<UTile*> PossibleTargetTiles);
 
 protected:
 	virtual void BeginPlay() override;
@@ -70,11 +70,11 @@ private:
 
 	// FindPathToTarget
 	void Pathfind();
-	int32 GetEstimatedCostToTile(FIntPoint Tile);
-	FIntPoint FindCheapestInQueue();
-	bool QueueElementIsBetterThanQueueCheapest(FIntPoint QueueElem, FIntPoint QueueCheapest);
-	void SetTileVariables(FIntPoint PreviousTile, FIntPoint CurrentNeighbor);
-	bool IsThisFirstEnemyPathfind(TArray<FIntPoint> BestPath);
+	int32 GetEstimatedCostToTile(UTile* Tile);
+	UTile* FindCheapestInQueue();
+	bool QueueElementIsBetterThanQueueCheapest(UTile* QueueElem, UTile* QueueCheapest);
+	void SetTileVariables(UTile* PreviousTile, UTile* CurrentNeighbor);
+	bool IsThisFirstEnemyPathfind(TArray<UTile*> BestPath);
 
 	// Both
 	void ClearMemberVariables();
@@ -84,23 +84,22 @@ private:
 	int32 NumOfPossibleTiles;
 
 	// FindPathToTarget
-	TArray<FIntPoint> MovementArea;
-	FIntPoint InitialTile;
-	FIntPoint DestinationTile;
-	TArray<FIntPoint> Path;
-	TArray<FIntPoint> EstablishedTiles;
+	TArray<UTile*> MovementArea;
+	UTile* InitialTile;
+	UTile* DestinationTile;
+	TArray<UTile*> Path;
+	TArray<UTile*> EstablishedTiles;
 	int32 FinalCostFromCurrentNeighbor;
 
 	// BreadthSearch and FindPathToTarget
 	AProtoFECharacter* CharacterPathfinding;
-	TArray<FIntPoint> Queue;
-	FIntPoint CurrentTile;
-	FGridData* CurrentTileStruct;
-	TArray<FIntPoint> ValidTiles;
+	TArray<UTile*> Queue;
+	UTile* CurrentTile;
+	TArray<UTile*> ValidTiles;
 	int32 MaxMovement;
 	int32 MoveCost;
-	TArray<FIntPoint> RedTiles;
+	TArray<UTile*> RedTiles;
 	bool IsPlayerPathfinding;
 		
-	TMap<FIntPoint, FGridData>* Grid;
+	TArray<FGridRow> Grid;
 };

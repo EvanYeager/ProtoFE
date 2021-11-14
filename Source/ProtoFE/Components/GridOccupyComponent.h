@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "GridOccupyComponent.generated.h"
 
+class UTile;
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOFE_API UGridOccupyComponent : public UActorComponent
@@ -25,5 +27,5 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(VisibleAnywhere)
-	FIntPoint OccupiedTile = FIntPoint(0, 0);
+	UTile* OccupiedTile = nullptr;
 };

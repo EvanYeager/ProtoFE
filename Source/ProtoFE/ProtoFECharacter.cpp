@@ -12,6 +12,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SnapToGrid.h"
 #include "Components/GridOccupyComponent.h"
+#include "tile.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
@@ -59,7 +60,6 @@ void AProtoFECharacter::PostEditMove(bool bFinished)
 
 	if (bFinished)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("about to occupy tile. Occupied tile is %s"), *GridOccupyComponent->OccupiedTile.ToString());
 		GridSnapComponent->SnapToClosestTile();
 	}
 }
@@ -91,13 +91,13 @@ void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
 	RemoveStats();
 }
 
-void AProtoFECharacter::OccupyTile(FIntPoint NewTile)
+void AProtoFECharacter::OccupyTile(UTile* NewTile)
 {
-	if (GridOccupyComponent->OccupiedTile.operator!=(FIntPoint(0, 0))) // if OccupiedTile is not the default
-		AGridManager::GetGrid(GetWorld())->Find(GridOccupyComponent->OccupiedTile)->OccupiedBy = nullptr; // delete from old tile
+	if (GridOccupyComponent->OccupiedTile != nullptr) // if OccupiedTile is not the default
+		GridOccupyComponent->OccupiedTile->Data.OccupiedBy = nullptr; // delete from old tile
 
 	// add on new tile
-	AGridManager::GetGrid(GetWorld())->Find(NewTile)->OccupiedBy = this;
+	NewTile->Data.OccupiedBy = this;
 	GridOccupyComponent->OccupiedTile = NewTile;
 }
 

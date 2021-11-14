@@ -2,21 +2,20 @@
 #include "Actors/TerrainModifiers/TerrainMod.h"
 #include "Actors/GridManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Tile.h"
 
-void IGridSnapInterface::AddTerrainModToTile(ITerrainMod* TerrainMod, FIntPoint Tile)
+void IGridSnapInterface::AddTerrainModToTile(ITerrainMod* TerrainMod, UTile* Tile)
 {
+   if (!Tile) return;
    if (!GridManager)
    {
       GridManager = FindGridManager();
       if (!GridManager) return;
    }
 
-   FGridData* TileData = GridManager->Grid.Find(Tile);
-   if (!TileData) return;
-
    AActor* ThisTerrainAsActor = Cast<AActor>(TerrainMod);
-   TileData->TerrainMod = ThisTerrainAsActor;
-   TileData->Terrain = TerrainMod->Terrain;
+   Tile->Data.TerrainMod = ThisTerrainAsActor;
+   Tile->Data.Terrain = TerrainMod->Terrain;
 }
 
 void IGridSnapInterface::DeleteTerrainModFromGrid(ITerrainMod* TerrainMod)
@@ -27,14 +26,17 @@ void IGridSnapInterface::DeleteTerrainModFromGrid(ITerrainMod* TerrainMod)
       if (!GridManager) return;
    }
 
-	for (auto& Tile : GridManager->Grid)
+	for (FGridRow Row : GridManager->Grid)
 	{
-		if (Tile.Value.TerrainMod == TerrainMod) 
-		{
-			Tile.Value.TerrainMod = nullptr;
-			Tile.Value.Terrain = ETerrain::Normal;
-			return;
-		}
+      for (UTile* Tile : Row.Tiles)
+      {
+         if (Tile->Data.TerrainMod == TerrainMod) 
+         {
+            Tile->Data.TerrainMod = nullptr;
+            Tile->Data.Terrain = ETerrain::Normal;
+            return;
+         }
+      }
 	}
 }
 

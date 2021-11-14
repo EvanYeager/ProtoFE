@@ -4,6 +4,7 @@
 #include "Actors/TileActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
+#include "Tile.h"
 
 
 // Sets default values
@@ -20,10 +21,13 @@ AGridManager::AGridManager()
 
 void AGridManager::OnConstruction(const FTransform& Transform) 
 {	
-	for (auto& Element : Grid)
+	for (FGridRow Row : Grid)
 	{
-		if (Element.Value.TileActor)
-			Element.Value.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
+		for (UTile* Tile : Row.Tiles)
+		{
+			if (Tile->Data.TileActor)
+				Tile->Data.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
+		}
 	}
 }
 
@@ -44,17 +48,19 @@ void AGridManager::Tick(float DeltaTime)
 
 void AGridManager::CreateGrid()
 {
-	Grid.Empty();
-	TMap<FIntPoint, FVector> Locations;
+	Grid.Empty(GridY);
+	TMap<UTile*, FVector> Locations;
 	int count = 0;
 	// create vars
 	for (int y = 1; y <= GridY; y++)
 	{
+		Grid.Add(FGridRow());
 		for (int x = 1; x <= GridX; x++)
 		{
-			Grid.Add(FIntPoint(x, y), FGridData(++count));
+			Grid[y - 1].Tiles.Add(NewObject<UTile>(this));
+			Grid[y - 1].Tiles[x - 1]->Data = FGridData(FIntPoint(x, y), ++count);
 			FVector StartingLoc = GetActorLocation();
-			Locations.Add(FIntPoint(x, y), FVector(StartingLoc.X + ((x - 1) * PlaneLength), StartingLoc.Y - ((y - 1) * PlaneLength), StartingLoc.Z));
+			Locations.Add(Grid[y - 1].Tiles[x - 1], FVector(StartingLoc.X + ((x - 1) * PlaneLength), StartingLoc.Y - ((y - 1) * PlaneLength), StartingLoc.Z));
 		}
 	}
 
@@ -70,34 +76,49 @@ void AGridManager::CreateGrid()
 	if (TileClass)
 	{
 		count = 0;
-		for (auto& Element : Locations)
+		for (auto Element : Locations)
 		{
 			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-			Grid.Find(Element.Key)->TileActor = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
+			Element.Key->Data.TileActor = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
 		}
 	
 		// set color & whatnot
-		for (auto& Element : Grid)
+		for (FGridRow Row : Grid)
 		{
-			Element.Value.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
+			for (UTile* Tile : Row.Tiles)
+			Tile->Data.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
 		}
 	}
 }
 
-FIntPoint AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
+UTile* AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
 {
-	for (auto& Tile : *AGridManager::GetGrid(WorldContext))
+	for (FGridRow Row : *AGridManager::GetGrid(WorldContext))
 	{
-		if (Location.Equals(Tile.Value.TileActor->GetActorLocation(), 40.0f))
-			return Tile.Key;
+		for (UTile* Tile : Row.Tiles)
+		{
+			if (Location.Equals(Tile->Data.TileActor->GetActorLocation(), 40.0f))
+				return Tile;
+		}
 	}
-	return FIntPoint(0, 0);
+	return nullptr;
 }
 
-TMap<FIntPoint, FGridData>* AGridManager::GetGrid(UWorld* WorldContext)
+UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid)
+{	
+	for (FGridRow Row : Grid)
+	{
+		for (UTile* Tile : Row.Tiles)
+		{
+			if (Tile->Data.Coordinates == Coords) return Tile;
+		}
+	}
+	return nullptr;
+}
+
+TArray<FGridRow>* AGridManager::GetGrid(UWorld* WorldContext)
 {
 	TArray<AActor*> Temp;
 	UGameplayStatics::GetAllActorsOfClass(WorldContext, AGridManager::StaticClass(), Temp);
-	if (Temp.Num() == 0) return new TMap<FIntPoint, FGridData>();
 	return &Cast<AGridManager>(Temp[0])->Grid;
 }

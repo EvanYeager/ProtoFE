@@ -29,7 +29,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USnapToGrid* GridSnapComponent;
 
-	virtual void OccupyTile(FIntPoint NewTile) override;
+	virtual void OccupyTile(UTile* NewTile) override;
 
 protected:
 	// Called when the game starts or when spawned

@@ -3,6 +3,7 @@
 #include "Components/SnapToGrid.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/GridOccupyComponent.h"
+#include "Actors/GridManager.h"
 
 
 // Sets default values
@@ -45,19 +46,19 @@ void ATerrainModifier::Tick(float DeltaTime)
 
 }
 
-void ATerrainModifier::OccupyTile(FIntPoint NewTile)
+void ATerrainModifier::OccupyTile(UTile* NewTile)
 {
-	TMap<FIntPoint, FGridData>* Grid = AGridManager::GetGrid(GetWorld());
+	TArray<FGridRow>* Grid = AGridManager::GetGrid(GetWorld());
 
-	if (GridOccupyComponent->OccupiedTile.operator!=(FIntPoint(0, 0))) // if OccupiedTile is not the default
+	if (GridOccupyComponent->OccupiedTile != nullptr) // if OccupiedTile is not the default
 	{
 		// delete from old tile
-		Grid->Find(GridOccupyComponent->OccupiedTile)->TerrainMod = nullptr;
-		Grid->Find(GridOccupyComponent->OccupiedTile)->Terrain = ETerrain::Normal;
+		GridOccupyComponent->OccupiedTile->Data.TerrainMod = nullptr;
+		GridOccupyComponent->OccupiedTile->Data.Terrain = ETerrain::Normal;
 	}
 		
 	// add on new tile
-	Grid->Find(NewTile)->TerrainMod = this;
-	Grid->Find(NewTile)->Terrain = Terrain;
+	NewTile->Data.TerrainMod = this;
+	NewTile->Data.Terrain = Terrain;
 	GridOccupyComponent->OccupiedTile = NewTile;
 }

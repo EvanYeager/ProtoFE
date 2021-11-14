@@ -8,6 +8,7 @@
 
 class ITerrainMod;
 class AGridManager;
+class UTile;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -24,7 +25,7 @@ class PROTOFE_API IGridSnapInterface
 public:
 	AGridManager* GridManager;
 
-	void AddTerrainModToTile(ITerrainMod* TerrainMod, FIntPoint Tile);
+	void AddTerrainModToTile(ITerrainMod* TerrainMod, UTile* Tile);
 	void DeleteTerrainModFromGrid(ITerrainMod* TerrainMod);
 	AGridManager* FindGridManager();
 

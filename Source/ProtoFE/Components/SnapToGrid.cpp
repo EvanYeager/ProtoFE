@@ -4,6 +4,7 @@
 #include "Actors/TileActor.h"
 #include "Actors/TerrainModifiers/TerrainMod.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Tile.h"
 
 // Sets default values for this component's properties
 USnapToGrid::USnapToGrid()
@@ -53,11 +54,15 @@ void USnapToGrid::SnapToClosestTile()
 		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.Y / GridManager->PlaneLength))
 	);
 	const FIntPoint Offset = FIntPoint(1, 1);
-	if (!GridManager->Grid.Find(TilesAway + Offset)) return;
+	FIntPoint TileCoords = TilesAway + Offset;
+	
+	UTile* NewTile = AGridManager::GetTileWithCoords(TileCoords, GridManager->Grid);
+	if (!NewTile) return;
 
-	GetOwner()->SetActorLocation(AGridManager::GetGrid(GetWorld())->Find(TilesAway + Offset)->TileActor->GetActorLocation());
+	// snap actor to closest tile
+	GetOwner()->SetActorLocation(NewTile->Data.TileActor->GetActorLocation()); 
 
 	if (IGridOccupy* OwnerAsGridOccupy = Cast<IGridOccupy>(GetOwner()))
-		OwnerAsGridOccupy->OccupyTile(TilesAway + Offset);
+		OwnerAsGridOccupy->OccupyTile(NewTile);
 }
 

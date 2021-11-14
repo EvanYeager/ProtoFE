@@ -7,47 +7,16 @@
 class AProtoFECharacter;
 class ATileActor;
 class ITerrainMod;
+class UTile;
 
-UENUM(BlueprintType)
-enum class ETerrain : uint8
-{
-	Normal UMETA(DisplayName="Normal"),
-	Foliage UMETA(DisplayName="Foliage"),
-	Water UMETA(DisplayName="Water"),
-	Mountains UMETA(DisplayName="Moutains"),
-	Impossible UMETA(DisplayName="Impossible")
-};
 
 USTRUCT(BlueprintType)
-struct FGridData
+struct FGridRow
 {
 	GENERATED_USTRUCT_BODY()
 
-	FGridData() {}
-	FGridData(int TileNumber)
-	{
-		this->TileNumber = TileNumber;
-	}
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ATileActor* TileActor = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TScriptInterface<ITerrainMod> TerrainMod = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AProtoFECharacter* OccupiedBy = nullptr;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int TileNumber = 1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ETerrain Terrain = ETerrain::Normal;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pathfinding)
-	int FinalCost = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pathfinding)
-	int CostFromStart = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pathfinding)
-	int EstimatedCostToTarget = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pathfinding)
-	FIntPoint PreviousTileCoords = FIntPoint(0, 0);
-	
+	TArray<UTile*> Tiles;
 };
 
 
@@ -61,7 +30,7 @@ public:
 	AGridManager();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
-	TMap<FIntPoint, FGridData> Grid;
+	TArray<FGridRow> Grid;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	int GridX = 18;
@@ -74,9 +43,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
-	static FIntPoint GetTileWithLocation(UWorld* WorldContext, FVector Location);
+	static UTile* GetTileWithLocation(UWorld* WorldContext, FVector Location);
+	static UTile* GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid);
 
-	static TMap<FIntPoint, FGridData>* GetGrid(UWorld* WorldContext);
+	static TArray<FGridRow>* GetGrid(UWorld* WorldContext);
 
 protected:
 	// Called when the game starts or when spawned

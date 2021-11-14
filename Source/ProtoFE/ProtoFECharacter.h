@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Actors/GridManager.h"
+#include "Tile.h"
 #include "Interfaces/GridOccupy.h"
 #include "ProtoFECharacter.generated.h"
 
@@ -124,7 +124,7 @@ public:
 	// runs when the mouse clicks on character
 	virtual void SelectCharacter();
 
-	virtual void OccupyTile(FIntPoint NewTile) override;
+	virtual void OccupyTile(UTile* NewTile) override;
 
 	// TODO items
 

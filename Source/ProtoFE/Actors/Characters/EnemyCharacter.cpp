@@ -5,6 +5,7 @@
 #include "Actors/GridManager.h"
 #include "Actors/TileActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Tile.h"
 
 
 AEnemyCharacter::AEnemyCharacter() 
@@ -27,17 +28,15 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
 
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      TArray<FIntPoint> RedTiles;
+      TArray<UTile*> RedTiles;
       TArray<AProtoFECharacter*> Chars;
-      TArray<FIntPoint> MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
+      TArray<UTile*> MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       MovementTiles.Append(RedTiles);
-      TMap<FIntPoint, FGridData>* Grid = AGridManager::GetGrid(GetWorld());
-      for (FIntPoint Tile : MovementTiles)
+      for (UTile* Tile : MovementTiles)
       {
-         FGridData* TileInfo = Grid->Find(Tile);
-         TileInfo->TileActor->Plane->SetVisibility(true);
-         TileInfo->TileActor->SetColor(EHighlightColor::EnemyRange);
-         TileInfo->TileActor->SetStrength(EHighlightStrength::Weak);
+         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+         Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
       }
    }
 }
