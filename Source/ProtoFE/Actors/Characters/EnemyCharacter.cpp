@@ -14,10 +14,19 @@ AEnemyCharacter::AEnemyCharacter()
    Information.Name = TEXT("Enemy");
 }
 
-void AEnemyCharacter::SelectCharacter() 
+void AEnemyCharacter::CharacterClick() 
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
+      if (!IsSelected)
+      {
+         PlayerController->AddHighlightedTiles(this);
+      }
+      else
+      {
+         PlayerController->RemoveHighlightedTiles(this);
+      }
+      IsSelected = !IsSelected;
       
    }
 }
@@ -28,15 +37,11 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
 
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      TArray<UTile*> RedTiles;
-      TArray<AProtoFECharacter*> Chars;
-      TArray<UTile*> MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
-      MovementTiles.Append(RedTiles);
-      for (UTile* Tile : MovementTiles)
+      // if I decide I want this is I can uncomment it
+      // if (PlayerController->GetSelectedCharacter()) return;
+      if (!IsSelected)
       {
-         Tile->Data.TileActor->Plane->SetVisibility(true);
-         Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-         Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
+         BreadthSearch();
       }
    }
 }
@@ -44,4 +49,51 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
 void AEnemyCharacter::EndCursorOver(UPrimitiveComponent* comp)
 {
    Super::EndCursorOver(comp);
+
+   if (!IsSelected)
+   {
+      for (UTile* Tile : MovementTiles)
+      {
+         Tile->Data.TileActor->Plane->SetVisibility(false);
+      }
+   }
+
+   MovementTiles.Empty();
+}
+
+
+void AEnemyCharacter::BreadthSearch()
+{
+   if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+   {
+      TArray<UTile*> RedTiles;
+      TArray<AProtoFECharacter*> Chars;
+      MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
+      MovementTiles.Append(RedTiles); // include attack range
+      FilterMovementTiles();
+      for (UTile* Tile : MovementTiles)
+      {
+         if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue;
+         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+         Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
+      }
+   }
+}
+
+void AEnemyCharacter::FilterMovementTiles() 
+{
+   if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+   {
+      TArray<UTile*> Temp;
+      for (UTile* Tile : MovementTiles)
+      {
+         if (PlayerController->EnemyRange.Tiles.Contains(Tile))
+            Temp.Add(Tile);
+      }
+      for(UTile* Tile : Temp)
+      {
+         MovementTiles.Remove(Tile);
+      }
+   }
 }

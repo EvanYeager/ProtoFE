@@ -9,6 +9,21 @@ class ATileActor;
 class APlayerCharacter;
 class AGridManager;
 class UPathfinder;
+class UTile;
+class AEnemyCharacter;
+
+USTRUCT(BlueprintType)
+struct FEnemyRange
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<AEnemyCharacter*> Characters;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UTile*> Tiles;
+	
+};
 
 UCLASS()
 class AProtoFEPlayerController : public APlayerController
@@ -26,12 +41,19 @@ public:
 
 	void FocusCharacter(APlayerCharacter* Char);
 
+	/** Adds an enemy character for highlighted enemy range */
+	void AddHighlightedTiles(AEnemyCharacter* Char);
+	/** Removes an enemy character from highlighted tiles */
+	void RemoveHighlightedTiles(AEnemyCharacter* Char);
+	/** removes all highlighted tiles */
+	void RemoveHighlightedTiles();
+
 	UFUNCTION(BlueprintCallable)
 	APlayerCharacter* GetSelectedCharacter();
 
 	UPathfinder* Pathfinder;
 
-
+	FEnemyRange EnemyRange;
 
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
@@ -53,6 +75,9 @@ private:
 	void Click();
 
 	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
+
+	/** makes the tiles invisible and empties them from the array */
+	void ResetEnemyTiles(TArray<UTile*> Tiles);
 	
 };
 

@@ -13,6 +13,7 @@ class PROTOFE_API APlayerCharacter : public AProtoFECharacter
 public:
 	APlayerCharacter();
 	
-	virtual void SelectCharacter() override;
+	virtual void CharacterClick() override;
+	virtual void SelectCharacter();
 	
 };

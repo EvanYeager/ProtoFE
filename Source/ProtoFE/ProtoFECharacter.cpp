@@ -79,7 +79,7 @@ void AProtoFECharacter::Tick(float DeltaSeconds)
 
 }
 
-void AProtoFECharacter::SelectCharacter() {}
+void AProtoFECharacter::CharacterClick() {}
 
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {
@@ -90,6 +90,8 @@ void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
 {
 	RemoveStats();
 }
+
+void AProtoFECharacter::BreadthSearch() {}
 
 void AProtoFECharacter::OccupyTile(UTile* NewTile)
 {

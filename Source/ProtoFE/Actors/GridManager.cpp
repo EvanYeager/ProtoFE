@@ -7,6 +7,9 @@
 #include "Tile.h"
 
 
+#include "CoreMisc.h"
+
+
 // Sets default values
 AGridManager::AGridManager()
 {
@@ -105,15 +108,9 @@ UTile* AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
 }
 
 UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid)
-{	
-	for (FGridRow Row : Grid)
-	{
-		for (UTile* Tile : Row.Tiles)
-		{
-			if (Tile->Data.Coordinates == Coords) return Tile;
-		}
-	}
-	return nullptr;
+{
+	if (Coords.X < 1 || Coords.Y < 1 || Grid.Num() < Coords.Y || !Grid[Coords.Y - 1].Tiles[Coords.X - 1]) return nullptr;
+	return Grid[Coords.Y - 1].Tiles[Coords.X - 1];
 }
 
 TArray<FGridRow>* AGridManager::GetGrid(UWorld* WorldContext)

@@ -122,7 +122,9 @@ public:
 	TMap<ETerrain, int> TerrainMoveCost;
 
 	// runs when the mouse clicks on character
-	virtual void SelectCharacter();
+	virtual void CharacterClick();
+
+	virtual void BreadthSearch();
 
 	virtual void OccupyTile(UTile* NewTile) override;
 

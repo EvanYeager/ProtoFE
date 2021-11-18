@@ -14,9 +14,17 @@ class PROTOFE_API AEnemyCharacter : public AProtoFECharacter
 public:
 	AEnemyCharacter();
 	
-	virtual void SelectCharacter() override;
+	virtual void CharacterClick() override;
 
+	TArray<UTile*> MovementTiles;
+
+	bool IsSelected = false;
+	
+	virtual void BreadthSearch() override;
 protected:
 	virtual void OnCursorOver(UPrimitiveComponent* comp) override;
 	virtual void EndCursorOver(UPrimitiveComponent* comp) override;
+
+private:
+	void FilterMovementTiles();
 };

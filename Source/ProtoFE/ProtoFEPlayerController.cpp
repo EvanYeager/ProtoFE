@@ -12,6 +12,8 @@
 #include "Actors/Characters/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Actors/GridManager.h"
+#include "Tile.h"
+#include "Actors/Characters/EnemyCharacter.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -80,6 +82,7 @@ void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedCh
 	SelectedCharacter = SelectedChar;
 }
 
+
 void AProtoFEPlayerController::HighlightTile() 
 {
 	// unhighlight previously selected tile
@@ -113,7 +116,7 @@ void AProtoFEPlayerController::Click()
 		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 		{
 			if (AProtoFECharacter* CharacterClicked = Cast<AProtoFECharacter>(Hit.GetActor())) // if click hit a character
-				CharacterClicked->SelectCharacter();
+				CharacterClicked->CharacterClick();
 		}
 	}
 }
@@ -124,6 +127,51 @@ void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 	CameraController->FocusLocation(Char->GetActorLocation());
 }
 
+void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char) 
+{
+	for (UTile* Tile : Char->MovementTiles)
+	{
+		Tile->Data.TileActor->Plane->SetVisibility(true);
+		Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+		Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+	}
+	EnemyRange.Characters.Add(Char);
+	EnemyRange.Tiles.Append(Char->MovementTiles);
+}
+
+void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char) 
+{
+	// resets all enemy range data
+	ResetEnemyTiles(EnemyRange.Tiles);
+	EnemyRange.Characters.Remove(Char);
+	// loop through all highlighted characters and breadth search to find new tiles
+	for (AEnemyCharacter* C : EnemyRange.Characters)
+	{
+		C->BreadthSearch();
+		EnemyRange.Tiles.Append(C->MovementTiles);
+		for (UTile* Tile : C->MovementTiles)
+		{
+			Tile->Data.TileActor->Plane->SetVisibility(true);
+			Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+			Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+		}
+	}
+}
+
+void AProtoFEPlayerController::RemoveHighlightedTiles()
+{
+	ResetEnemyTiles(EnemyRange.Tiles);
+	EnemyRange.Characters.Empty();
+}
+
+void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles) 
+{
+	for (UTile* Tile : Tiles)
+	{
+		Tile->Data.TileActor->Plane->SetVisibility(false);
+		EnemyRange.Tiles.Remove(Tile);
+	}
+}
 
 // void AProtoFEPlayerController::MoveToMouseCursor()
 // {
