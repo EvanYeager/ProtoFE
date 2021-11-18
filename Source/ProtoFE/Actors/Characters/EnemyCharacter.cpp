@@ -20,6 +20,10 @@ void AEnemyCharacter::CharacterClick()
    {
       if (!IsSelected)
       {
+         for (UTile* Tile : MovementTiles)
+         {
+            Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
+         }
          PlayerController->AddHighlightedTiles(this);
       }
       else
@@ -42,6 +46,13 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
       if (!IsSelected)
       {
          BreadthSearch();
+         for (UTile* Tile : MovementTiles)
+         {
+            if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue;
+            Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
+            Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+            Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
+         }
       }
    }
 }
@@ -54,7 +65,7 @@ void AEnemyCharacter::EndCursorOver(UPrimitiveComponent* comp)
    {
       for (UTile* Tile : MovementTiles)
       {
-         Tile->Data.TileActor->Plane->SetVisibility(false);
+         Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
       }
    }
 
@@ -71,13 +82,6 @@ void AEnemyCharacter::BreadthSearch()
       MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       MovementTiles.Append(RedTiles); // include attack range
       FilterMovementTiles();
-      for (UTile* Tile : MovementTiles)
-      {
-         if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue;
-         Tile->Data.TileActor->Plane->SetVisibility(true);
-         Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-         Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
-      }
    }
 }
 

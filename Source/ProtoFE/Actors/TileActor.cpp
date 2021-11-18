@@ -17,10 +17,16 @@ ATileActor::ATileActor()
 	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root Component"));
 	RootComponent = Root;
 
-	Plane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Plane"));
-	Plane->SetupAttachment(Root);
-	Plane->SetStaticMesh(PlaneMesh);
-	Plane->SetRelativeScale3D(FVector(1, 1, .06f));
+	HighlightPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Highlight Plane"));
+	HighlightPlane->SetupAttachment(Root);
+	HighlightPlane->SetStaticMesh(PlaneMesh);
+	HighlightPlane->SetRelativeScale3D(FVector(1, 1, .06f));
+
+	EnemyRangePlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Enemy Range Plane"));
+	EnemyRangePlane->SetupAttachment(Root);
+	EnemyRangePlane->SetStaticMesh(PlaneMesh);
+	EnemyRangePlane->SetRelativeScale3D(FVector(1, 1, .06f));
+	EnemyRangePlane->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -28,8 +34,8 @@ void ATileActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Plane->SetVisibility(false);
- 	Material = Plane->CreateDynamicMaterialInstance(0, Plane->GetMaterial(0));
+	HighlightPlane->SetVisibility(false);
+ 	HighlightMaterial = HighlightPlane->CreateDynamicMaterialInstance(0, HighlightPlane->GetMaterial(0));
 	
 }
 
@@ -42,7 +48,7 @@ void ATileActor::Tick(float DeltaTime)
 
 void ATileActor::SetColor(EHighlightColor Color)
 {
-	if (!Material) return;
+	if (!HighlightMaterial) return;
 	FLinearColor _Color = DefaultHighlight;
 	switch (Color)
 	{
@@ -59,13 +65,13 @@ void ATileActor::SetColor(EHighlightColor Color)
 	default:
 		break;
 	}
-	Material->SetVectorParameterValue("Color", _Color);
+	HighlightMaterial->SetVectorParameterValue("Color", _Color);
 	SetStrength(EHighlightStrength::Normal); // reset to normal strength; this might not be the best way to do this
 }
 
 void ATileActor::SetStrength(EHighlightStrength Strength)
 {
-	if (!Material) return;
+	if (!HighlightMaterial) return;
 	float Opacity = NormalStrength;
 	switch (Strength)
 	{
@@ -79,5 +85,15 @@ void ATileActor::SetStrength(EHighlightStrength Strength)
 	default:
 		break;
 	}
-	Material->SetScalarParameterValue("Strength", Opacity);
+	HighlightMaterial->SetScalarParameterValue("Strength", Opacity);
+}
+
+void ATileActor::SetAsEnemyRange()
+{
+	EnemyRangePlane->SetVisibility(true);
+}
+
+void ATileActor::ResetAsEnemyRange()
+{
+	EnemyRangePlane->SetVisibility(false);
 }

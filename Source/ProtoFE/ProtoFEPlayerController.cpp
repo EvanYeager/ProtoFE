@@ -87,7 +87,7 @@ void AProtoFEPlayerController::HighlightTile()
 {
 	// unhighlight previously selected tile
 	if (SelectedTile)
-		SelectedTile->Plane->SetVisibility(false);
+		SelectedTile->HighlightPlane->SetVisibility(false);
 
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
@@ -95,7 +95,7 @@ void AProtoFEPlayerController::HighlightTile()
 		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
 		{
 			SelectedTile = Tile;
-			Tile->Plane->SetVisibility(true);
+			Tile->HighlightPlane->SetVisibility(true);
 			Tile->SetColor(EHighlightColor::DefaultHighlight);
 			if (GetSelectedCharacter())
 				Tile->SetStrength(EHighlightStrength::Strong);
@@ -131,9 +131,10 @@ void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char)
 {
 	for (UTile* Tile : Char->MovementTiles)
 	{
-		Tile->Data.TileActor->Plane->SetVisibility(true);
-		Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-		Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+		// Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
+		// Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+		// Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+		Tile->Data.TileActor->SetAsEnemyRange();
 	}
 	EnemyRange.Characters.Add(Char);
 	EnemyRange.Tiles.Append(Char->MovementTiles);
@@ -151,9 +152,10 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 		EnemyRange.Tiles.Append(C->MovementTiles);
 		for (UTile* Tile : C->MovementTiles)
 		{
-			Tile->Data.TileActor->Plane->SetVisibility(true);
-			Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-			Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+			// Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
+			// Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
+			// Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+			Tile->Data.TileActor->SetAsEnemyRange();
 		}
 	}
 }
@@ -168,7 +170,7 @@ void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles)
 {
 	for (UTile* Tile : Tiles)
 	{
-		Tile->Data.TileActor->Plane->SetVisibility(false);
+		Tile->Data.TileActor->ResetAsEnemyRange();
 		EnemyRange.Tiles.Remove(Tile);
 	}
 }

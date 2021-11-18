@@ -29,7 +29,7 @@ void AGridManager::OnConstruction(const FTransform& Transform)
 		for (UTile* Tile : Row.Tiles)
 		{
 			if (Tile->Data.TileActor)
-				Tile->Data.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
+				Tile->Data.TileActor->HighlightPlane->SetVisibility(ShowTileColorInEditor);
 		}
 	}
 }
@@ -89,7 +89,7 @@ void AGridManager::CreateGrid()
 		for (FGridRow Row : Grid)
 		{
 			for (UTile* Tile : Row.Tiles)
-			Tile->Data.TileActor->Plane->SetVisibility(ShowTileColorInEditor);
+			Tile->Data.TileActor->HighlightPlane->SetVisibility(ShowTileColorInEditor);
 		}
 	}
 }

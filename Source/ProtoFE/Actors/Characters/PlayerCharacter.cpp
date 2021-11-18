@@ -30,12 +30,12 @@ void APlayerCharacter::SelectCharacter()
       
       for (UTile* Tile : TilesInRange)
       {
-         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
          Tile->Data.TileActor->SetColor(EHighlightColor::BlueHighlight);
       }
       for (UTile* Tile : RedTiles)
       {
-         Tile->Data.TileActor->Plane->SetVisibility(true);
+         Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
          Tile->Data.TileActor->SetColor(EHighlightColor::RedHighlight);
       }
    }

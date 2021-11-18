@@ -35,12 +35,17 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* Plane;
+	UStaticMeshComponent* HighlightPlane;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* EnemyRangePlane;
 	UPROPERTY(VisibleAnywhere)
 	UStaticMesh* PlaneMesh;
 
 	void SetColor(EHighlightColor Color);
 	void SetStrength(EHighlightStrength Strength);
+
+	void SetAsEnemyRange();
+	void ResetAsEnemyRange();
 
 	// tile settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Settings")
@@ -55,7 +60,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UMaterialInstanceDynamic* Material;
+	UMaterialInstanceDynamic* HighlightMaterial;
 	
 	const FLinearColor DefaultHighlight = FLinearColor(0.187350, 0.641000, 0.318803, 1);
 	const FLinearColor BlueHighlight = FLinearColor(.1f, .1f, .8f, 1);
