@@ -47,6 +47,7 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
 	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::Click);
+	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::Undo);
 }
 
 void AProtoFEPlayerController::BeginPlay() 
@@ -121,6 +122,12 @@ void AProtoFEPlayerController::Click()
 	}
 }
 
+void AProtoFEPlayerController::Undo() 
+{
+	RemoveHighlightedTiles();
+}
+
+
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 {
 	SetSelectedCharacter(Char);
@@ -131,9 +138,6 @@ void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char)
 {
 	for (UTile* Tile : Char->MovementTiles)
 	{
-		// Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
-		// Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-		// Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
 		Tile->Data.TileActor->SetAsEnemyRange();
 	}
 	EnemyRange.Characters.Add(Char);
@@ -152,9 +156,6 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 		EnemyRange.Tiles.Append(C->MovementTiles);
 		for (UTile* Tile : C->MovementTiles)
 		{
-			// Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
-			// Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-			// Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
 			Tile->Data.TileActor->SetAsEnemyRange();
 		}
 	}
@@ -163,6 +164,8 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 void AProtoFEPlayerController::RemoveHighlightedTiles()
 {
 	ResetEnemyTiles(EnemyRange.Tiles);
+	for (AEnemyCharacter* Char : EnemyRange.Characters)
+		Char->IsSelected = false;
 	EnemyRange.Characters.Empty();
 }
 

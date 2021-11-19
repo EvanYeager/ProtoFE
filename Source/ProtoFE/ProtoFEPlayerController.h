@@ -73,6 +73,7 @@ private:
 
 	void HighlightTile();
 	void Click();
+	void Undo();
 
 	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
 
