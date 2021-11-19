@@ -79,7 +79,7 @@ void AProtoFECharacter::Tick(float DeltaSeconds)
 
 }
 
-void AProtoFECharacter::CharacterClick() {}
+void AProtoFECharacter::Select() {}
 
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {

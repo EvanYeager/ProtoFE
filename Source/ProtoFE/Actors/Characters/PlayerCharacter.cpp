@@ -13,12 +13,7 @@ APlayerCharacter::APlayerCharacter()
    Information.Name = TEXT("Player Character");
 }
 
-void APlayerCharacter::CharacterClick()
-{
-   SelectCharacter();
-}
-
-void APlayerCharacter::SelectCharacter()
+void APlayerCharacter::Select() 
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {

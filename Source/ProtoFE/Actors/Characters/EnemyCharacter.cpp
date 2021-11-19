@@ -14,7 +14,7 @@ AEnemyCharacter::AEnemyCharacter()
    Information.Name = TEXT("Enemy");
 }
 
-void AEnemyCharacter::CharacterClick() 
+void AEnemyCharacter::Select() 
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {

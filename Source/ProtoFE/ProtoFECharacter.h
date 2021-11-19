@@ -4,6 +4,8 @@
 #include "GameFramework/Character.h"
 #include "Tile.h"
 #include "Interfaces/GridOccupy.h"
+#include "Interfaces/Selectable.h"
+#include "Interfaces/Hoverable.h"
 #include "ProtoFECharacter.generated.h"
 
 class UStatsWindowParent;
@@ -99,8 +101,8 @@ struct FCharacterInfo
 	 */
 };
 
-UCLASS(Blueprintable)
-class AProtoFECharacter : public ACharacter, public IGridOccupy
+UCLASS(Abstract)
+class AProtoFECharacter : public ACharacter, public IGridOccupy, public ISelectable, public IHoverable
 {
 	GENERATED_BODY()
 
@@ -121,12 +123,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<ETerrain, int> TerrainMoveCost;
 
-	// runs when the mouse clicks on character
-	virtual void CharacterClick();
-
 	virtual void BreadthSearch();
 
 	virtual void OccupyTile(UTile* NewTile) override;
+
+	virtual void Select() override;
 
 	// TODO items
 
@@ -135,9 +136,9 @@ protected:
 	virtual void PostEditMove(bool bFinished) override;
 
 	UFUNCTION()
-	virtual void OnCursorOver(UPrimitiveComponent* comp);
+	virtual void OnCursorOver(UPrimitiveComponent* comp) override;
 	UFUNCTION()
-	virtual void EndCursorOver(UPrimitiveComponent* comp);
+	virtual void EndCursorOver(UPrimitiveComponent* comp) override;
 	UFUNCTION()
 	virtual void DisplayStats();
 	UFUNCTION()

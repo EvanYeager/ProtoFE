@@ -14,7 +14,7 @@ class PROTOFE_API AEnemyCharacter : public AProtoFECharacter
 public:
 	AEnemyCharacter();
 	
-	virtual void CharacterClick() override;
+	virtual void Select() override;
 
 	TArray<UTile*> MovementTiles;
 

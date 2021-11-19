@@ -14,6 +14,7 @@
 #include "Actors/GridManager.h"
 #include "Tile.h"
 #include "Actors/Characters/EnemyCharacter.h"
+#include "Interfaces/Selectable.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -116,8 +117,8 @@ void AProtoFEPlayerController::Click()
 		FHitResult Hit;
 		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 		{
-			if (AProtoFECharacter* CharacterClicked = Cast<AProtoFECharacter>(Hit.GetActor())) // if click hit a character
-				CharacterClicked->CharacterClick();
+			if (ISelectable* CharacterClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit a character
+				CharacterClicked->Select();
 		}
 	}
 }
