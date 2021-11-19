@@ -117,8 +117,8 @@ void AProtoFEPlayerController::Click()
 		FHitResult Hit;
 		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 		{
-			if (ISelectable* CharacterClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit a character
-				CharacterClicked->Select();
+			if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
+				ActorClicked->Select();
 		}
 	}
 }
@@ -127,7 +127,6 @@ void AProtoFEPlayerController::Undo()
 {
 	RemoveHighlightedTiles();
 }
-
 
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 {

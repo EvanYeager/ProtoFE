@@ -52,28 +52,19 @@ TArray<UTile*> UPathfinder::GetTileNeighbors(UTile* Tile, bool IncludePlayers, b
 		FIntPoint NeighborCoords = Tile->Data.Coordinates + Direction;
 		UTile* AdjacentTile = AGridManager::GetTileWithCoords(NeighborCoords, Grid);
 		if (!AdjacentTile) continue;
+		if (MovementArea.Num() > 0 && !MovementArea.Contains(AdjacentTile)) continue; // if finding path to target and neighbor is not in movement options, don't consider it
 
-		if(MovementArea.Num() > 0) // This checks if the MovementArea array has data. It only should when this is called in the FindPathToTarget function
+		if (IsTileOccupied(AdjacentTile))
 		{
-			if (MovementArea.Contains(AdjacentTile))
-			{
-				goto EVALUATE;
-			}
-		}
-		else if (AdjacentTile)
-		{
-			EVALUATE:if (IsTileOccupied(AdjacentTile))
-			{
-				AProtoFECharacter* Char = AdjacentTile->Data.OccupiedBy;
-				if (!IncludePlayers ^ (Char->Information.Team == ETeam::Player) || IncludeEnemies ^ (Char->Information.Team == ETeam::Player)) // Returns true if both booleans are the same, i.e. char is a player and include players, or if an enemy and include enemies
-				{
-					OutNeighbors.AddUnique(AdjacentTile);
-				}
-			}
-			else
+			AProtoFECharacter* Char = AdjacentTile->Data.OccupiedBy;
+			if (!IncludePlayers ^ (Char->Information.Team == ETeam::Player) || IncludeEnemies ^ (Char->Information.Team == ETeam::Player)) // Returns true if both booleans are the same, i.e. char is a player and include players, or if an enemy and include enemies
 			{
 				OutNeighbors.AddUnique(AdjacentTile);
 			}
+		}
+		else
+		{
+			OutNeighbors.AddUnique(AdjacentTile);
 		}
 	}
 	return OutNeighbors;
