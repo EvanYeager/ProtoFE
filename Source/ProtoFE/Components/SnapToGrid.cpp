@@ -53,8 +53,7 @@ void USnapToGrid::SnapToClosestTile()
 		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.X / GridManager->PlaneLength)),
 		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.Y / GridManager->PlaneLength))
 	);
-	const FIntPoint Offset = FIntPoint(1, 1);
-	FIntPoint TileCoords = TilesAway + Offset;
+	FIntPoint TileCoords = TilesAway;
 	
 	UTile* NewTile = AGridManager::GetTileWithCoords(TileCoords, GridManager->Grid);
 	if (!NewTile) return;

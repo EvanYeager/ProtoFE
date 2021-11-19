@@ -55,15 +55,15 @@ void AGridManager::CreateGrid()
 	TMap<UTile*, FVector> Locations;
 	int count = 0;
 	// create vars
-	for (int y = 1; y <= GridY; y++)
+	for (int y = 0; y < GridY; y++)
 	{
 		Grid.Add(FGridRow());
-		for (int x = 1; x <= GridX; x++)
+		for (int x = 0; x < GridX; x++)
 		{
-			Grid[y - 1].Tiles.Add(NewObject<UTile>(this));
-			Grid[y - 1].Tiles[x - 1]->Data = FGridData(FIntPoint(x, y), ++count);
+			Grid[y].Tiles.Add(NewObject<UTile>(this));
+			Grid[y].Tiles[x]->Data = FGridData(FIntPoint(x, y), ++count);
 			FVector StartingLoc = GetActorLocation();
-			Locations.Add(Grid[y - 1].Tiles[x - 1], FVector(StartingLoc.X + ((x - 1) * PlaneLength), StartingLoc.Y - ((y - 1) * PlaneLength), StartingLoc.Z));
+			Locations.Add(Grid[y].Tiles[x], FVector(StartingLoc.X + (x * PlaneLength), StartingLoc.Y - (y * PlaneLength), StartingLoc.Z));
 		}
 	}
 
@@ -109,8 +109,8 @@ UTile* AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
 
 UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid)
 {
-	if (Coords.X < 1 || Coords.Y < 1 || Grid.Num() < Coords.Y || !Grid[Coords.Y - 1].Tiles[Coords.X - 1]) return nullptr;
-	return Grid[Coords.Y - 1].Tiles[Coords.X - 1];
+	if (Coords.X < 0 || Coords.Y < 0 || Grid.Num() < Coords.Y || !Grid[Coords.Y].Tiles[Coords.X]) return nullptr;
+	return Grid[Coords.Y].Tiles[Coords.X];
 }
 
 TArray<FGridRow>* AGridManager::GetGrid(UWorld* WorldContext)
