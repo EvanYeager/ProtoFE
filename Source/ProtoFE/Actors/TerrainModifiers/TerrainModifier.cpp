@@ -48,7 +48,7 @@ void ATerrainModifier::Tick(float DeltaTime)
 
 void ATerrainModifier::OccupyTile(UTile* NewTile)
 {
-	TArray<FGridRow>* Grid = AGridManager::GetGrid(GetWorld());
+	TArray<FGridColumn>* Grid = AGridManager::GetGrid(GetWorld());
 
 	if (GridOccupyComponent->OccupiedTile != nullptr) // if OccupiedTile is not the default
 	{

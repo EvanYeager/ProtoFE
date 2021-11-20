@@ -101,5 +101,5 @@ private:
 	TArray<UTile*> RedTiles;
 	bool IsPlayerPathfinding;
 		
-	TArray<FGridRow> Grid;
+	TArray<FGridColumn> Grid;
 };

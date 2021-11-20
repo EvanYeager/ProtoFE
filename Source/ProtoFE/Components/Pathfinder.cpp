@@ -121,9 +121,9 @@ int32 UPathfinder::GetMovementOptionArea(int32 Movement)
 
 void UPathfinder::ResetFinalCosts()
 {
-	for(FGridRow Row : Grid)
+	for(FGridColumn Col : Grid)
 	{
-		for (UTile* Tile : Row.Tiles)
+		for (UTile* Tile : Col.Tiles)
 		{
 			Tile->FinalCost = 0;
 		}
@@ -232,9 +232,9 @@ TArray<UTile*> UPathfinder::FindPathToTarget(TArray<UTile*> AvailableMovementAre
 
 void UPathfinder::ResetPathfindingTileVars()
 {
-	for (FGridRow Row : Grid)
+	for (FGridColumn Col : Grid)
 	{
-		for (UTile* Tile : Row.Tiles)
+		for (UTile* Tile : Col.Tiles)
 		{
 			Tile->FinalCost = 0;
 			Tile->CostFromStart = 0;

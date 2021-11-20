@@ -11,7 +11,7 @@ class UTile;
 
 
 USTRUCT(BlueprintType)
-struct FGridRow
+struct FGridColumn
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -30,7 +30,7 @@ public:
 	AGridManager();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
-	TArray<FGridRow> Grid;
+	TArray<FGridColumn> Grid;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	int GridX = 18;
@@ -44,10 +44,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
 	static UTile* GetTileWithLocation(UWorld* WorldContext, FVector Location);
-	static UTile* GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid);
+	static UTile* GetTileWithCoords(FIntPoint Coords, TArray<FGridColumn> Grid);
 	static UTile* GetTileWithActor(AActor* Actor, AGridManager* GridManager);
 
-	static TArray<FGridRow>* GetGrid(UWorld* WorldContext);
+	static TArray<FGridColumn>* GetGrid(UWorld* WorldContext);
 
 protected:
 	// Called when the game starts or when spawned

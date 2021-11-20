@@ -24,9 +24,9 @@ AGridManager::AGridManager()
 
 void AGridManager::OnConstruction(const FTransform& Transform) 
 {	
-	for (FGridRow Row : Grid)
+	for (FGridColumn Col : Grid)
 	{
-		for (UTile* Tile : Row.Tiles)
+		for (UTile* Tile : Col.Tiles)
 		{
 			if (Tile->Data.TileActor)
 				Tile->Data.TileActor->HighlightPlane->SetVisibility(ShowTileColorInEditor);
@@ -51,19 +51,25 @@ void AGridManager::Tick(float DeltaTime)
 
 void AGridManager::CreateGrid()
 {
-	Grid.Empty(GridY);
+	Grid.Empty(GridX);
+	// holds the locations where the tile actors should be spawned
 	TMap<UTile*, FVector> Locations;
 	int count = 0;
-	// create vars
+
+	// create columns
+	for (int col = 0; col < GridX; col++)
+	{
+		Grid.Add(FGridColumn());
+	}
+	// create tiles
 	for (int y = 0; y < GridY; y++)
 	{
-		Grid.Add(FGridRow());
 		for (int x = 0; x < GridX; x++)
 		{
-			Grid[y].Tiles.Add(NewObject<UTile>(this));
-			Grid[y].Tiles[x]->Data = FGridData(FIntPoint(x, y), ++count);
+			Grid[x].Tiles.Add(NewObject<UTile>(this));
+			Grid[x].Tiles[y]->Data = FGridData(FIntPoint(x, y), ++count);
 			FVector StartingLoc = GetActorLocation();
-			Locations.Add(Grid[y].Tiles[x], FVector(StartingLoc.X + (x * PlaneLength), StartingLoc.Y - (y * PlaneLength), StartingLoc.Z));
+			Locations.Add(Grid[x].Tiles[y], FVector(StartingLoc.X + (x * PlaneLength), StartingLoc.Y - (y * PlaneLength), StartingLoc.Z));
 		}
 	}
 
@@ -86,19 +92,19 @@ void AGridManager::CreateGrid()
 		}
 	
 		// set color & whatnot
-		for (FGridRow Row : Grid)
+		for (FGridColumn Col : Grid)
 		{
-			for (UTile* Tile : Row.Tiles)
-			Tile->Data.TileActor->HighlightPlane->SetVisibility(ShowTileColorInEditor);
+			for (UTile* Tile : Col.Tiles)
+				Tile->Data.TileActor->HighlightPlane->SetVisibility(ShowTileColorInEditor);
 		}
 	}
 }
 
 UTile* AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
 {
-	for (FGridRow Row : *AGridManager::GetGrid(WorldContext))
+	for (FGridColumn Col : *AGridManager::GetGrid(WorldContext))
 	{
-		for (UTile* Tile : Row.Tiles)
+		for (UTile* Tile : Col.Tiles)
 		{
 			if (Location.Equals(Tile->Data.TileActor->GetActorLocation(), 40.0f))
 				return Tile;
@@ -107,10 +113,10 @@ UTile* AGridManager::GetTileWithLocation(UWorld* WorldContext, FVector Location)
 	return nullptr;
 }
 
-UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid)
+UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridColumn> Grid)
 {
-	if (Coords.X < 0 || Coords.Y < 0 || Grid.Num() < Coords.Y || !Grid[Coords.Y].Tiles[Coords.X]) return nullptr;
-	return Grid[Coords.Y].Tiles[Coords.X];
+	if (Coords.X < 0 || Coords.Y < 0 || Grid.Num() <= Coords.X || Grid[0].Tiles.Num() <= Coords.Y || !Grid[Coords.X].Tiles[Coords.Y]) return nullptr;
+	return Grid[Coords.X].Tiles[Coords.Y];
 }
 
 UTile* AGridManager::GetTileWithActor(AActor* Actor, AGridManager* GridManager)
@@ -128,7 +134,7 @@ UTile* AGridManager::GetTileWithActor(AActor* Actor, AGridManager* GridManager)
 	return AGridManager::GetTileWithCoords(TilesAway, GridManager->Grid);
 }
 
-TArray<FGridRow>* AGridManager::GetGrid(UWorld* WorldContext)
+TArray<FGridColumn>* AGridManager::GetGrid(UWorld* WorldContext)
 {
 	TArray<AActor*> Temp;
 	UGameplayStatics::GetAllActorsOfClass(WorldContext, AGridManager::StaticClass(), Temp);

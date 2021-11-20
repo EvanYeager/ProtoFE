@@ -73,6 +73,8 @@ private:
 	/** player character that is currently selected, if there is one. May be null. */
 	APlayerCharacter* SelectedCharacter = nullptr;
 
+	TArray<UTile*> Path;
+
 	void HighlightTile();
 	void Click();
 	void Undo();

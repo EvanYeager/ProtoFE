@@ -26,9 +26,9 @@ void IGridSnapInterface::DeleteTerrainModFromGrid(ITerrainMod* TerrainMod)
       if (!GridManager) return;
    }
 
-	for (FGridRow Row : GridManager->Grid)
+	for (FGridColumn Col : GridManager->Grid)
 	{
-      for (UTile* Tile : Row.Tiles)
+      for (UTile* Tile : Col.Tiles)
       {
          if (Tile->Data.TerrainMod == TerrainMod) 
          {

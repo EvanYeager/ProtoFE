@@ -37,7 +37,13 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 	// pathfinding - should I put this in another place?
 	if (GetSelectedCharacter() && SelectedTile && PreviousTile != SelectedTile && GetSelectedCharacter()->MovementArea.Contains(SelectedTile)) 
 	{
-		TArray<UTile*> Path = Pathfinder->FindPathToTarget(
+		// unhighlight previous path
+		for (UTile* Tile : Path)
+		{
+			Tile->Data.TileActor->SetStrength(EHighlightStrength::Normal);
+		}
+
+		Path = Pathfinder->FindPathToTarget(
 			GetSelectedCharacter()->MovementArea, 
 			GetSelectedCharacter()->GridOccupyComponent->OccupiedTile, 
 			SelectedTile
@@ -105,7 +111,7 @@ void AProtoFEPlayerController::HighlightTile()
 {
 	PreviousTile = SelectedTile;
 	// unhighlight previously selected tile
-	if (SelectedTile)
+	if (SelectedTile && !GetSelectedCharacter())
 		SelectedTile->Data.TileActor->HighlightPlane->SetVisibility(false);
 
 	FHitResult Hit;
