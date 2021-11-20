@@ -44,18 +44,7 @@ void USnapToGrid::SnapToClosestTile()
 	if (Temp.Num() == 0) return;
 	GridManager = Cast<AGridManager>(Temp[0]);
 
-	FVector TrueLocation = GetOwner()->GetActorLocation();
-	FVector2D DistanceFromRoot = FVector2D( // distance from actor to grid manager
-		GridManager->GetActorLocation().X - TrueLocation.X,
-		GridManager->GetActorLocation().Y - TrueLocation.Y
-	);
-	FIntPoint TilesAway = FIntPoint( // tiles away from the root, aka grid manager
-		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.X / GridManager->PlaneLength)),
-		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.Y / GridManager->PlaneLength))
-	);
-	FIntPoint TileCoords = TilesAway;
-	
-	UTile* NewTile = AGridManager::GetTileWithCoords(TileCoords, GridManager->Grid);
+	UTile* NewTile = AGridManager::GetTileWithActor(GetOwner(), GridManager);
 	if (!NewTile) return;
 
 	// snap actor to closest tile

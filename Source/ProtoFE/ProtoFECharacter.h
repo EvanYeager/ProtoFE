@@ -123,6 +123,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<ETerrain, int> TerrainMoveCost;
 
+	TArray<UTile*> MovementArea;
+
 	virtual void BreadthSearch();
 
 	virtual void OccupyTile(UTile* NewTile) override;

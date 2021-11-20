@@ -67,7 +67,7 @@ private:
 	const FLinearColor RedHighlight = FLinearColor(0.8f, 0.2f, 0, 1);
 	const FLinearColor EnemyRange = FLinearColor(1, 0, 0, 1);
 	const float NormalStrength = 1.0f;
-	const float StrongStrength = 2.0f;
+	const float StrongStrength = 5.0f;
 	const float WeakStrength = 0.5f;
 
 };

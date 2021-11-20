@@ -15,6 +15,7 @@
 #include "Tile.h"
 #include "Actors/Characters/EnemyCharacter.h"
 #include "Interfaces/Selectable.h"
+#include "Components/GridOccupyComponent.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -33,6 +34,21 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 
 	HighlightTile();
+	// pathfinding - should I put this in another place?
+	if (GetSelectedCharacter() && SelectedTile && PreviousTile != SelectedTile && GetSelectedCharacter()->MovementArea.Contains(SelectedTile)) 
+	{
+		TArray<UTile*> Path = Pathfinder->FindPathToTarget(
+			GetSelectedCharacter()->MovementArea, 
+			GetSelectedCharacter()->GridOccupyComponent->OccupiedTile, 
+			SelectedTile
+		);
+		for (UTile* Tile : Path)
+		{
+			Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
+			Tile->Data.TileActor->SetColor(EHighlightColor::BlueHighlight);
+			Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
+		}
+	}
 }
 
 void AProtoFEPlayerController::SetupInputComponent()
@@ -87,16 +103,17 @@ void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedCh
 
 void AProtoFEPlayerController::HighlightTile() 
 {
+	PreviousTile = SelectedTile;
 	// unhighlight previously selected tile
 	if (SelectedTile)
-		SelectedTile->HighlightPlane->SetVisibility(false);
+		SelectedTile->Data.TileActor->HighlightPlane->SetVisibility(false);
 
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
 	{
 		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
 		{
-			SelectedTile = Tile;
+			SelectedTile = AGridManager::GetTileWithActor(Tile, GridManager);
 			Tile->HighlightPlane->SetVisibility(true);
 			Tile->SetColor(EHighlightColor::DefaultHighlight);
 			if (GetSelectedCharacter())
@@ -136,12 +153,12 @@ void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 
 void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char) 
 {
-	for (UTile* Tile : Char->MovementTiles)
+	for (UTile* Tile : Char->MovementArea)
 	{
 		Tile->Data.TileActor->SetAsEnemyRange();
 	}
 	EnemyRange.Characters.Add(Char);
-	EnemyRange.Tiles.Append(Char->MovementTiles);
+	EnemyRange.Tiles.Append(Char->MovementArea);
 }
 
 void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char) 
@@ -153,8 +170,8 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 	for (AEnemyCharacter* C : EnemyRange.Characters)
 	{
 		C->BreadthSearch();
-		EnemyRange.Tiles.Append(C->MovementTiles);
-		for (UTile* Tile : C->MovementTiles)
+		EnemyRange.Tiles.Append(C->MovementArea);
+		for (UTile* Tile : C->MovementArea)
 		{
 			Tile->Data.TileActor->SetAsEnemyRange();
 		}

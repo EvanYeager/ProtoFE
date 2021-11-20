@@ -21,9 +21,9 @@ void APlayerCharacter::Select()
       PlayerController->FocusCharacter(this);
       TArray<UTile*> RedTiles;
       TArray<AProtoFECharacter*> Chars;
-      TArray<UTile*> TilesInRange = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
+      MovementArea = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
       
-      for (UTile* Tile : TilesInRange)
+      for (UTile* Tile : MovementArea)
       {
          Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
          Tile->Data.TileActor->SetColor(EHighlightColor::BlueHighlight);

@@ -20,7 +20,7 @@ void AEnemyCharacter::Select()
    {
       if (!IsSelected)
       {
-         for (UTile* Tile : MovementTiles)
+         for (UTile* Tile : MovementArea)
          {
             Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
          }
@@ -46,7 +46,7 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
       if (!IsSelected)
       {
          BreadthSearch();
-         for (UTile* Tile : MovementTiles)
+         for (UTile* Tile : MovementArea)
          {
             if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue;
             Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
@@ -63,13 +63,13 @@ void AEnemyCharacter::EndCursorOver(UPrimitiveComponent* comp)
 
    if (!IsSelected)
    {
-      for (UTile* Tile : MovementTiles)
+      for (UTile* Tile : MovementArea)
       {
          Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
       }
    }
 
-   MovementTiles.Empty();
+   MovementArea.Empty();
 }
 
 
@@ -79,8 +79,8 @@ void AEnemyCharacter::BreadthSearch()
    {
       TArray<UTile*> RedTiles;
       TArray<AProtoFECharacter*> Chars;
-      MovementTiles = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
-      MovementTiles.Append(RedTiles); // include attack range
+      MovementArea = PlayerController->Pathfinder->BreadthSearch(this, RedTiles, Chars);
+      MovementArea.Append(RedTiles); // include attack range
       FilterMovementTiles();
    }
 }
@@ -90,14 +90,14 @@ void AEnemyCharacter::FilterMovementTiles()
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
       TArray<UTile*> Temp;
-      for (UTile* Tile : MovementTiles)
+      for (UTile* Tile : MovementArea)
       {
          if (PlayerController->EnemyRange.Tiles.Contains(Tile))
             Temp.Add(Tile);
       }
       for(UTile* Tile : Temp)
       {
-         MovementTiles.Remove(Tile);
+         MovementArea.Remove(Tile);
       }
    }
 }

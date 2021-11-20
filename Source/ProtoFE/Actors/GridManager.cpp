@@ -113,6 +113,21 @@ UTile* AGridManager::GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid)
 	return Grid[Coords.Y].Tiles[Coords.X];
 }
 
+UTile* AGridManager::GetTileWithActor(AActor* Actor, AGridManager* GridManager)
+{
+	FVector TileLocation = Actor->GetActorLocation();
+	FVector2D DistanceFromRoot = FVector2D( // distance from actor to grid manager
+		GridManager->GetActorLocation().X - TileLocation.X,
+		GridManager->GetActorLocation().Y - TileLocation.Y
+	);
+	FIntPoint TilesAway = FIntPoint( // tiles away from the root, aka grid manager
+		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.X / GridManager->PlaneLength)),
+		FMath::RoundToInt(FMath::Abs(DistanceFromRoot.Y / GridManager->PlaneLength))
+	);
+	
+	return AGridManager::GetTileWithCoords(TilesAway, GridManager->Grid);
+}
+
 TArray<FGridRow>* AGridManager::GetGrid(UWorld* WorldContext)
 {
 	TArray<AActor*> Temp;

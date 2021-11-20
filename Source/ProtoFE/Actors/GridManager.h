@@ -45,6 +45,7 @@ public:
 	void CreateGrid();
 	static UTile* GetTileWithLocation(UWorld* WorldContext, FVector Location);
 	static UTile* GetTileWithCoords(FIntPoint Coords, TArray<FGridRow> Grid);
+	static UTile* GetTileWithActor(AActor* Actor, AGridManager* GridManager);
 
 	static TArray<FGridRow>* GetGrid(UWorld* WorldContext);
 

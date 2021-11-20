@@ -204,6 +204,8 @@ void UPathfinder::FilterRedTiles()
 
 TArray<UTile*> UPathfinder::FindPathToTarget(TArray<UTile*> AvailableMovementArea, UTile* StartTile, UTile* TargetTile, bool IsPlayerCalling)
 {
+	Path.Empty();
+	if (!StartTile || !TargetTile) return Path;
 	if (StartTile == TargetTile)
 	{
 		Path.Add(StartTile);

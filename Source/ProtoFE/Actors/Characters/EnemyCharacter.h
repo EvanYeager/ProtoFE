@@ -16,8 +16,6 @@ public:
 	
 	virtual void Select() override;
 
-	TArray<UTile*> MovementTiles;
-
 	bool IsSelected = false;
 	
 	virtual void BreadthSearch() override;

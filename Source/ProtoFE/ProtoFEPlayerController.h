@@ -66,7 +66,9 @@ private:
 
 	UPROPERTY()
 	/** current tile under cursor. May be null. */
-	ATileActor* SelectedTile;
+	UTile* SelectedTile;
+	/** the selected tile from last frame. May be null. */
+	UTile* PreviousTile;
 
 	/** player character that is currently selected, if there is one. May be null. */
 	APlayerCharacter* SelectedCharacter = nullptr;
