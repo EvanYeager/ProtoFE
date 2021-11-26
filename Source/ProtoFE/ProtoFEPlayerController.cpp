@@ -9,6 +9,7 @@
 #include "UserWidget.h"
 #include "Components/CameraControllerComponent.h"
 #include "Components/Pathfinder.h" 
+#include "Components/HighlightComponent.h"
 #include "Actors/Characters/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Actors/GridManager.h"
@@ -25,6 +26,7 @@ AProtoFEPlayerController::AProtoFEPlayerController()
 
 	CameraController = CreateDefaultSubobject<UCameraControllerComponent>(TEXT("Camera Controller"));
 	Pathfinder = CreateDefaultSubobject<UPathfinder>(TEXT("Pathfinder"));
+	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
 }
 
 
@@ -37,23 +39,14 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 	// pathfinding - should I put this in another place?
 	if (GetSelectedCharacter() && SelectedTile && PreviousTile != SelectedTile && GetSelectedCharacter()->MovementArea.Contains(SelectedTile)) 
 	{
-		// unhighlight previous path
-		for (UTile* Tile : Path)
-		{
-			Tile->Data.TileActor->SetStrength(EHighlightStrength::Normal);
-		}
+		HighlightComponent->ResetPath();
 
 		Path = Pathfinder->FindPathToTarget(
 			GetSelectedCharacter()->MovementArea, 
 			GetSelectedCharacter()->GridOccupyComponent->OccupiedTile, 
 			SelectedTile
 		);
-		for (UTile* Tile : Path)
-		{
-			Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
-			Tile->Data.TileActor->SetColor(EHighlightColor::BlueHighlight);
-			Tile->Data.TileActor->SetStrength(EHighlightStrength::Strong);
-		}
+		HighlightComponent->HighlightPath();
 	}
 }
 
@@ -83,6 +76,25 @@ void AProtoFEPlayerController::BeginPlay()
 
 }
 
+void AProtoFEPlayerController::HighlightTile() 
+{
+	PreviousTile = SelectedTile;
+
+	if (SelectedTile)
+		HighlightComponent->RemoveTileHighlight(SelectedTile);
+
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
+	{
+		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
+		{
+			SelectedTile = AGridManager::GetTileWithActor(Tile, GridManager);
+			HighlightComponent->HighlightSelectedTile();
+		}
+	}
+	else SelectedTile = nullptr;
+}
+
 UUserWidget* AProtoFEPlayerController::DisplayWidget(TSubclassOf<UUserWidget> WidgetClass) 
 {
 	UUserWidget* Widget = CreateWidget<UUserWidget>(this, WidgetClass);
@@ -104,29 +116,6 @@ APlayerCharacter* AProtoFEPlayerController::GetSelectedCharacter()
 void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedChar)
 {
 	SelectedCharacter = SelectedChar;
-}
-
-
-void AProtoFEPlayerController::HighlightTile() 
-{
-	PreviousTile = SelectedTile;
-	// unhighlight previously selected tile
-	if (SelectedTile && !GetSelectedCharacter())
-		SelectedTile->Data.TileActor->HighlightPlane->SetVisibility(false);
-
-	FHitResult Hit;
-	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
-	{
-		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
-		{
-			SelectedTile = AGridManager::GetTileWithActor(Tile, GridManager);
-			Tile->HighlightPlane->SetVisibility(true);
-			Tile->SetColor(EHighlightColor::DefaultHighlight);
-			if (GetSelectedCharacter())
-				Tile->SetStrength(EHighlightStrength::Strong);
-		}
-	}
-	else SelectedTile = nullptr;
 }
 
 void AProtoFEPlayerController::Click() 
@@ -184,7 +173,7 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 	}
 }
 
-void AProtoFEPlayerController::RemoveHighlightedTiles()
+void AProtoFEPlayerController::RemoveHighlightedTiles() // TODO change name to RemoveEnemyRangeTiles()
 {
 	ResetEnemyTiles(EnemyRange.Tiles);
 	for (AEnemyCharacter* Char : EnemyRange.Characters)

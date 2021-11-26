@@ -4,8 +4,9 @@
 #include "Components/Pathfinder.h"
 #include "Actors/GridManager.h"
 #include "Actors/TileActor.h"
-#include "Components/StaticMeshComponent.h"
+// #include "Components/StaticMeshComponent.h"
 #include "Tile.h"
+#include "Components/HighlightComponent.h"
 
 
 AEnemyCharacter::AEnemyCharacter() 
@@ -22,7 +23,7 @@ void AEnemyCharacter::Select()
       {
          for (UTile* Tile : MovementArea)
          {
-            Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
+            PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
          }
          PlayerController->AddHighlightedTiles(this);
       }
@@ -48,10 +49,8 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
          BreadthSearch();
          for (UTile* Tile : MovementArea)
          {
-            if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue;
-            Tile->Data.TileActor->HighlightPlane->SetVisibility(true);
-            Tile->Data.TileActor->SetColor(EHighlightColor::EnemyRange);
-            Tile->Data.TileActor->SetStrength(EHighlightStrength::Weak);
+            if (PlayerController->EnemyRange.Tiles.Contains(Tile)) continue; // don't highlight tiles that are already highlighted
+            PlayerController->HighlightComponent->AddTileHighlight(Tile, EHighlightColor::EnemyRange, EHighlightStrength::Weak);
          }
       }
    }
@@ -61,15 +60,18 @@ void AEnemyCharacter::EndCursorOver(UPrimitiveComponent* comp)
 {
    Super::EndCursorOver(comp);
 
-   if (!IsSelected)
+   if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      for (UTile* Tile : MovementArea)
+      if (!IsSelected)
       {
-         Tile->Data.TileActor->HighlightPlane->SetVisibility(false);
+         for (UTile* Tile : MovementArea)
+         {
+            PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
+         }
       }
-   }
 
-   MovementArea.Empty();
+      MovementArea.Empty();
+   }
 }
 
 

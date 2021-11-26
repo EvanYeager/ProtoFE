@@ -23,6 +23,24 @@ enum class EHighlightStrength : uint8
 	Weak UMETA(DisplayName="Weak")
 };
 
+USTRUCT(BlueprintType)
+struct FColorLayer
+{
+	GENERATED_USTRUCT_BODY()
+
+	FColorLayer() {}
+	FColorLayer(EHighlightColor C, EHighlightStrength S)
+	{
+		Color = C;
+		Strength = S;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EHighlightColor Color;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EHighlightStrength Strength;
+};
+
 UCLASS(Blueprintable)
 class PROTOFE_API ATileActor : public AActor
 {
@@ -41,6 +59,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMesh* PlaneMesh;
 
+	// layers of tile colors and strengths
+	TArray<FColorLayer> Layers;
+
 	void SetColor(EHighlightColor Color);
 	void SetStrength(EHighlightStrength Strength);
 
@@ -53,6 +74,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Settings")
 	FVector HighlightColor = FVector(0.7f, 0.7f, 0.7f);
 
+	void AddColorLayer(EHighlightColor Color, EHighlightStrength Strength);
+	void RemoveColorLayer();
 	
 
 protected:
@@ -69,5 +92,7 @@ private:
 	const float NormalStrength = 1.0f;
 	const float StrongStrength = 5.0f;
 	const float WeakStrength = 0.5f;
+
+	void SwitchToTopLayer();
 
 };

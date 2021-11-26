@@ -9,6 +9,7 @@ class ATileActor;
 class APlayerCharacter;
 class AGridManager;
 class UPathfinder;
+class UHighlightComponent;
 class UTile;
 class AEnemyCharacter;
 
@@ -52,9 +53,18 @@ public:
 	APlayerCharacter* GetSelectedCharacter();
 
 	UPathfinder* Pathfinder;
+	UHighlightComponent* HighlightComponent;
 
 	FEnemyRange EnemyRange;
 
+	UPROPERTY()
+	/** current tile under cursor. May be null. */
+	UTile* SelectedTile;
+	/** the selected tile from last frame. May be null. */
+	UTile* PreviousTile;
+	
+	TArray<UTile*> Path;
+	
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
@@ -64,16 +74,10 @@ private:
 	UPROPERTY()
 	UCameraControllerComponent* CameraController;
 
-	UPROPERTY()
-	/** current tile under cursor. May be null. */
-	UTile* SelectedTile;
-	/** the selected tile from last frame. May be null. */
-	UTile* PreviousTile;
 
 	/** player character that is currently selected, if there is one. May be null. */
 	APlayerCharacter* SelectedCharacter = nullptr;
 
-	TArray<UTile*> Path;
 
 	void HighlightTile();
 	void Click();

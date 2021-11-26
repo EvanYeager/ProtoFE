@@ -88,6 +88,33 @@ void ATileActor::SetStrength(EHighlightStrength Strength)
 	HighlightMaterial->SetScalarParameterValue("Strength", Opacity);
 }
 
+void ATileActor::AddColorLayer(EHighlightColor Color, EHighlightStrength Strength)
+{
+	Layers.Add(FColorLayer(Color, Strength));
+	SwitchToTopLayer();
+}
+	
+void ATileActor::RemoveColorLayer()
+{
+	if (Layers.Num() == 0) return;
+	Layers.RemoveAt(Layers.Num() - 1);
+	SwitchToTopLayer();
+}
+
+void ATileActor::SwitchToTopLayer()
+{
+	if (Layers.Num() == 0)
+	{
+		HighlightPlane->SetVisibility(false);
+	}
+	else
+	{
+		HighlightPlane->SetVisibility(true);
+		SetColor(Layers.Last().Color);
+		SetStrength(Layers.Last().Strength);
+	}
+}
+
 void ATileActor::SetAsEnemyRange()
 {
 	EnemyRangePlane->SetVisibility(true);
