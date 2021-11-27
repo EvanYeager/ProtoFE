@@ -22,6 +22,10 @@ class PROTOFE_API ISelectable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+	virtual void HandleSelection();
 	// defines what to do when actor is selected
 	virtual void Select() = 0;
+	virtual void UnSelect();
+	virtual bool ShouldSelect();
+	virtual bool ShouldUnSelect();
 };

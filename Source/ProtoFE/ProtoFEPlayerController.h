@@ -49,6 +49,8 @@ public:
 	/** removes all highlighted tiles */
 	void RemoveHighlightedTiles();
 
+	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
+
 	UFUNCTION(BlueprintCallable)
 	APlayerCharacter* GetSelectedCharacter();
 
@@ -80,13 +82,14 @@ private:
 
 
 	void HighlightTile();
-	void Click();
+	void OnClick();
 	void Undo();
 
-	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
 
 	/** makes the tiles invisible and empties them from the array */
 	void ResetEnemyTiles(TArray<UTile*> Tiles);
+
+	bool ShouldPathfind();
 	
 };
 

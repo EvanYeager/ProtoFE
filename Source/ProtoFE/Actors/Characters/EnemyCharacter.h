@@ -15,6 +15,9 @@ public:
 	AEnemyCharacter();
 	
 	virtual void Select() override;
+	virtual void UnSelect() override;
+	virtual bool ShouldSelect() override;
+	virtual bool ShouldUnSelect() override;
 
 	bool IsSelected = false;
 	

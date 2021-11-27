@@ -1,6 +1,15 @@
-
-
-
 #include "Selectable.h"
 
-// Add default functionality here for any ISelectable functions that are not pure virtual.
+void ISelectable::HandleSelection() 
+{
+   if (ShouldSelect())
+      Select();
+   else if (ShouldUnSelect())
+      UnSelect();
+}
+
+void ISelectable::UnSelect() {}
+
+bool ISelectable::ShouldSelect() {return true;}
+
+bool ISelectable::ShouldUnSelect() {return !ShouldSelect();}

@@ -11,7 +11,7 @@
 class USnapToGrid;
 class UGridOccupyComponent;
 
-UCLASS()
+UCLASS(Abstract)
 class PROTOFE_API ATerrainModifier : public AActor, public ITerrainMod, public IGridOccupy
 {
 	GENERATED_BODY()

@@ -14,5 +14,15 @@ public:
 	APlayerCharacter();
 	
 	virtual void Select() override;
+	virtual void UnSelect() override;
+	virtual bool ShouldSelect() override;
 	
+	TArray<UTile*> AttackRangeTiles;
+
+protected:
+
+private:
+	void HighlightTiles();
+	void ResetTiles();
+
 };

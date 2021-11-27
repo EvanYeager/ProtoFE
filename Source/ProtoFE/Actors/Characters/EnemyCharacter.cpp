@@ -4,7 +4,6 @@
 #include "Components/Pathfinder.h"
 #include "Actors/GridManager.h"
 #include "Actors/TileActor.h"
-// #include "Components/StaticMeshComponent.h"
 #include "Tile.h"
 #include "Components/HighlightComponent.h"
 
@@ -19,21 +18,36 @@ void AEnemyCharacter::Select()
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      if (!IsSelected)
+      IsSelected = true;
+      for (UTile* Tile : MovementArea)
       {
-         for (UTile* Tile : MovementArea)
-         {
-            PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
-         }
-         PlayerController->AddHighlightedTiles(this);
+         PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
       }
-      else
-      {
-         PlayerController->RemoveHighlightedTiles(this);
-      }
-      IsSelected = !IsSelected;
-      
+      PlayerController->AddHighlightedTiles(this);
    }
+}
+
+void AEnemyCharacter::UnSelect() 
+{
+   if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+   {
+      IsSelected = false;
+      PlayerController->RemoveHighlightedTiles(this);
+   }
+}
+
+bool AEnemyCharacter::ShouldSelect() 
+{
+   if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+   {
+      return !IsSelected && !PlayerController->GetSelectedCharacter();
+   }
+   return false;
+}
+
+bool AEnemyCharacter::ShouldUnSelect() 
+{
+   return IsSelected;
 }
 
 void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)

@@ -74,4 +74,5 @@ void UHighlightComponent::ResetPath()
 	{
 		Tile->Data.TileActor->RemoveColorLayer();
 	}
+	Owner->Path.Empty();
 }

@@ -37,7 +37,7 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 
 	HighlightTile();
 	// pathfinding - should I put this in another place?
-	if (GetSelectedCharacter() && SelectedTile && PreviousTile != SelectedTile && GetSelectedCharacter()->MovementArea.Contains(SelectedTile)) 
+	if (ShouldPathfind()) 
 	{
 		HighlightComponent->ResetPath();
 
@@ -62,7 +62,7 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ZoomOut", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraOut);
 	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
-	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::Click);
+	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnClick);
 	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::Undo);
 }
 
@@ -118,11 +118,12 @@ void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedCh
 	SelectedCharacter = SelectedChar;
 }
 
-void AProtoFEPlayerController::Click() 
+void AProtoFEPlayerController::OnClick() 
 {
-	if (GetSelectedCharacter())
+	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
 	{
-		SetSelectedCharacter(nullptr);
+		
+		GetSelectedCharacter()->UnSelect();
 	}
 	else
 	{
@@ -130,9 +131,9 @@ void AProtoFEPlayerController::Click()
 		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 		{
 			if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
-				ActorClicked->Select();
+				ActorClicked->HandleSelection();
 		}
-	}
+	} 
 }
 
 void AProtoFEPlayerController::Undo() 
@@ -142,7 +143,6 @@ void AProtoFEPlayerController::Undo()
 
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 {
-	SetSelectedCharacter(Char);
 	CameraController->FocusLocation(Char->GetActorLocation());
 }
 
@@ -188,6 +188,15 @@ void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles)
 		Tile->Data.TileActor->ResetAsEnemyRange();
 		EnemyRange.Tiles.Remove(Tile);
 	}
+}
+
+bool AProtoFEPlayerController::ShouldPathfind()
+{
+	return GetSelectedCharacter() 
+	&& SelectedTile 
+	&& PreviousTile != SelectedTile 
+	&& (GetSelectedCharacter()->MovementArea.Contains(SelectedTile)  // if selected tile is in character's movement range or occupied tile
+		|| SelectedTile == GetSelectedCharacter()->GridOccupyComponent->OccupiedTile);
 }
 
 // void AProtoFEPlayerController::MoveToMouseCursor()
