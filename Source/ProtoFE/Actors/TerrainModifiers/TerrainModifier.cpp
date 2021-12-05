@@ -10,7 +10,7 @@
 ATerrainModifier::ATerrainModifier()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
@@ -39,26 +39,27 @@ void ATerrainModifier::PostEditMove(bool bFinished)
 	}
 }
 
-// Called every frame
-void ATerrainModifier::Tick(float DeltaTime)
+void ATerrainModifier::Destroyed()
 {
-	Super::Tick(DeltaTime);
+	Super::Destroyed();
 
+	DeleteFromCurrentTile();
 }
 
-void ATerrainModifier::OccupyTile(UTile* NewTile)
+void ATerrainModifier::DeleteFromCurrentTile()
 {
-	TArray<FGridColumn>* Grid = AGridManager::GetGrid(GetWorld());
-
-	if (GridOccupyComponent->OccupiedTile != nullptr) // if OccupiedTile is not the default
+	if (GridOccupyComponent->OccupiedTile)
 	{
-		// delete from old tile
 		GridOccupyComponent->OccupiedTile->Data.TerrainMod = nullptr;
 		GridOccupyComponent->OccupiedTile->Data.Terrain = ETerrain::Normal;
+		GridOccupyComponent->OccupiedTile = nullptr;
 	}
-		
-	// add on new tile
+}
+
+void ATerrainModifier::OccupyNewTile(UTile* NewTile)
+{
 	NewTile->Data.TerrainMod = this;
 	NewTile->Data.Terrain = Terrain;
 	GridOccupyComponent->OccupiedTile = NewTile;
 }
+

@@ -93,6 +93,13 @@ void AProtoFECharacter::Tick(float DeltaSeconds)
 
 }
 
+void AProtoFECharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	DeleteFromCurrentTile();
+}
+
 void AProtoFECharacter::Select() {}
 
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
@@ -107,12 +114,17 @@ void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
 
 void AProtoFECharacter::BreadthSearch() {}
 
-void AProtoFECharacter::OccupyTile(UTile* NewTile)
+void AProtoFECharacter::DeleteFromCurrentTile() 
 {
-	if (GridOccupyComponent->OccupiedTile != nullptr) // if OccupiedTile is not the default
-		GridOccupyComponent->OccupiedTile->Data.OccupiedBy = nullptr; // delete from old tile
+	if (GridOccupyComponent->OccupiedTile)
+	{
+		GridOccupyComponent->OccupiedTile->Data.OccupiedBy = nullptr;
+		GridOccupyComponent->OccupiedTile = nullptr;
+	}
+}
 
-	// add on new tile
+void AProtoFECharacter::OccupyNewTile(UTile* NewTile)
+{
 	NewTile->Data.OccupiedBy = this;
 	GridOccupyComponent->OccupiedTile = NewTile;
 }

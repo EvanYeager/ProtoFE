@@ -127,7 +127,8 @@ public:
 
 	virtual void BreadthSearch();
 
-	virtual void OccupyTile(UTile* NewTile) override;
+	virtual void DeleteFromCurrentTile() override;
+	virtual void OccupyNewTile(UTile* NewTile) override;
 
 	virtual void Select() override;
 
@@ -136,6 +137,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostEditMove(bool bFinished) override;
+	virtual void Destroyed() override;
 
 	UFUNCTION()
 	virtual void OnCursorOver(UPrimitiveComponent* comp) override;

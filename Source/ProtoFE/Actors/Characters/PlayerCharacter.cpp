@@ -14,14 +14,6 @@ APlayerCharacter::APlayerCharacter()
    Information.Name = TEXT("Player Character");
 }
 
-// void APlayerCharacter::HandleSelection() 
-// {
-//    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
-//    {
-//       PlayerController->
-//    }
-// }
-
 void APlayerCharacter::Select() 
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
@@ -30,6 +22,7 @@ void APlayerCharacter::Select()
 
       // PlayerController->FocusCharacter(this);
       PlayerController->SetSelectedCharacter(this);
+
       TArray<AProtoFECharacter*> Chars;
       MovementArea = PlayerController->Pathfinder->BreadthSearch(this, AttackRangeTiles, Chars);
 
@@ -49,18 +42,12 @@ void APlayerCharacter::UnSelect()
 
 bool APlayerCharacter::ShouldSelect() 
 {
-   // ???? idk
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
       return PlayerController->GetSelectedCharacter() == nullptr;
    }
    return false;
 }
-
-// bool APlayerCharacter::ShouldUnSelect() 
-// {
-//    return !ShouldSelect();
-// }
 
 void APlayerCharacter::HighlightTiles() 
 {

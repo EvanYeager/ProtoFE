@@ -39,8 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	bool ShowTileColorInEditor = true;
 
+	// should be const but lul
 	UPROPERTY()	
-	const int PlaneLength = 120;
+	int PlaneLength = 120;
 
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
@@ -60,7 +61,6 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	UPROPERTY()
 	TSubclassOf<ATileActor> TileClass;
 
 

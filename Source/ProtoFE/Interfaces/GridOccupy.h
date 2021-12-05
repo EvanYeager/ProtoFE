@@ -20,6 +20,9 @@ class PROTOFE_API IGridOccupy
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	/** Deletes the previously occupied tile, and sets on the new one */
-	virtual void OccupyTile(UTile* NewTile) = 0;
+	virtual void MoveTiles(UTile* NewTile);
+
+	virtual void DeleteFromCurrentTile() = 0;
+	virtual void OccupyNewTile(UTile* NewTile) = 0;
 
 };

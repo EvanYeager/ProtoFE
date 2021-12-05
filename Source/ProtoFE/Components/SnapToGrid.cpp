@@ -47,6 +47,6 @@ void USnapToGrid::SnapToClosestTile()
 	GetOwner()->SetActorLocation(NewTile->Data.TileActor->GetActorLocation()); 
 
 	if (IGridOccupy* OwnerAsGridOccupy = Cast<IGridOccupy>(GetOwner()))
-		OwnerAsGridOccupy->OccupyTile(NewTile);
+		OwnerAsGridOccupy->MoveTiles(NewTile);
 }
 
