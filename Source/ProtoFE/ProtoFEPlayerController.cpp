@@ -65,7 +65,8 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
 
 	// gameplay functions
-	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnClick);
+	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnLeftClick);
+	InputComponent->BindAction("Command", IE_Pressed, this, &AProtoFEPlayerController::OnRightClick);
 	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::Undo);
 }
 
@@ -119,22 +120,23 @@ void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedCh
 	SelectedCharacter = SelectedChar;
 }
 
-void AProtoFEPlayerController::OnClick() 
+void AProtoFEPlayerController::OnLeftClick() 
+{
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
+	{
+		if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
+			ActorClicked->HandleSelection();
+	}
+}
+
+void AProtoFEPlayerController::OnRightClick() 
 {
 	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
 	{
 		MoveCharacter(GetSelectedCharacter());
 		GetSelectedCharacter()->UnSelect();
 	}
-	else
-	{
-		FHitResult Hit;
-		if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
-		{
-			if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
-				ActorClicked->HandleSelection();
-		}
-	} 
 }
 
 void AProtoFEPlayerController::Undo() 

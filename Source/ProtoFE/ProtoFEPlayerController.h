@@ -83,7 +83,8 @@ private:
 
 
 	void HighlightTile();
-	void OnClick();
+	void OnLeftClick();
+	void OnRightClick();
 	void Undo();
 
 	void MoveCharacter(AProtoFECharacter* Char);
