@@ -58,7 +58,7 @@ void APlayerCharacter::HighlightTiles()
       PlayerController->HighlightComponent->AddTileHighlight(GridOccupyComponent->OccupiedTile, EHighlightColor::DefaultHighlight, EHighlightStrength::Normal);
       
       // unhighlight the selected tile, then highlight it again later so the layers stay correct (movement range should be under the highlight)
-      PlayerController->HighlightComponent->RemoveTileHighlight(PlayerController->SelectedTile);
+      PlayerController->HighlightComponent->RemoveTileHighlight(PlayerController->GetSelectedTile());
 
       for (UTile* Tile : MovementArea)
       {

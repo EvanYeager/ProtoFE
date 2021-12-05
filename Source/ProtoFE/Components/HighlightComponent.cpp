@@ -32,7 +32,7 @@ void UHighlightComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 void UHighlightComponent::HighlightSelectedTile()
 {
 	AddTileHighlight(
-		Owner->SelectedTile,
+		Owner->GetSelectedTile(),
 		EHighlightColor::DefaultHighlight, 
 		Owner->GetSelectedCharacter() ? EHighlightStrength::Strong : EHighlightStrength::Normal
 	);	

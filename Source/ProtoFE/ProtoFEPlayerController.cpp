@@ -194,6 +194,11 @@ void AProtoFEPlayerController::RemoveHighlightedTiles() // TODO change name to R
 	EnemyRange.Characters.Empty();
 }
 
+UTile* AProtoFEPlayerController::GetSelectedTile() 
+{
+	return SelectedTile;
+}
+
 void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles) 
 {
 	for (UTile* Tile : Tiles)

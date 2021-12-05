@@ -50,6 +50,10 @@ public:
 	/** removes all highlighted tiles */
 	void RemoveHighlightedTiles();
 
+	UFUNCTION()
+	UTile* GetSelectedTile();
+
+	UFUNCTION()
 	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
 
 	UFUNCTION(BlueprintCallable)
@@ -60,9 +64,6 @@ public:
 
 	FEnemyRange EnemyRange;
 
-	UPROPERTY()
-	/** current tile under cursor. May be null. */
-	UTile* SelectedTile;
 	/** the selected tile from last frame. May be null. */
 	UTile* PreviousTile;
 	
@@ -77,6 +78,9 @@ private:
 	UPROPERTY()
 	UCameraControllerComponent* CameraController;
 
+	UPROPERTY()
+	/** current tile under cursor. May be null. */
+	UTile* SelectedTile;
 
 	/** player character that is currently selected, if there is one. May be null. */
 	APlayerCharacter* SelectedCharacter = nullptr;
