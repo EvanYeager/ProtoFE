@@ -46,27 +46,26 @@ void ATileActor::Tick(float DeltaTime)
 
 }
 
-void ATileActor::SetColor(EHighlightColor Color)
+void ATileActor::SetColor(EHighlightColor HighlightColor)
 {
 	if (!HighlightMaterial) return;
-	FLinearColor _Color = DefaultHighlight;
-	switch (Color)
+	FLinearColor color = DefaultHighlight;
+	switch (HighlightColor)
 	{
 	case EHighlightColor::EnemyRange:
-		_Color = EnemyRange;
+		color = EnemyRange;
 		break;
 	case EHighlightColor::RedHighlight:
-		_Color = RedHighlight;
+		color = RedHighlight;
 		break;
 	case EHighlightColor::BlueHighlight:
-		_Color = BlueHighlight;
+		color = BlueHighlight;
 		break;
 	
 	default:
 		break;
 	}
-	HighlightMaterial->SetVectorParameterValue("Color", _Color);
-	SetStrength(EHighlightStrength::Normal); // reset to normal strength; this might not be the best way to do this
+	HighlightMaterial->SetVectorParameterValue("Color", color);
 }
 
 void ATileActor::SetStrength(EHighlightStrength Strength)
@@ -103,16 +102,15 @@ void ATileActor::RemoveColorLayer()
 
 void ATileActor::SwitchToTopLayer()
 {
-	if (Layers.Num() == 0)
+	if (Layers.Num() == 0) // if there aren't any layers, make it invisible
 	{
 		HighlightPlane->SetVisibility(false);
+		return;
 	}
-	else
-	{
-		HighlightPlane->SetVisibility(true);
-		SetColor(Layers.Last().Color);
-		SetStrength(Layers.Last().Strength);
-	}
+
+	HighlightPlane->SetVisibility(true);
+	SetColor(Layers.Last().Color);
+	SetStrength(Layers.Last().Strength);
 }
 
 void ATileActor::SetAsEnemyRange()

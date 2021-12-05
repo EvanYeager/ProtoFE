@@ -38,15 +38,18 @@ public:
 	int GridY = 20;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	bool ShowTileColorInEditor = true;
-	
+
+	UPROPERTY()	
 	const int PlaneLength = 120;
 
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
-	static UTile* GetTileWithLocation(UWorld* WorldContext, FVector Location);
-	static UTile* GetTileWithCoords(FIntPoint Coords, TArray<FGridColumn> Grid);
-	static UTile* GetTileWithActor(AActor* Actor, AGridManager* GridManager);
+	static UTile* GetTile(FIntPoint Coords, TArray<FGridColumn> Grid);
+	static UTile* GetTile(FIntPoint Coords, UWorld* WorldContext);
+	static UTile* GetTile(FVector Location, UWorld* WorldContext);
+	UTile* GetTile(FVector Location);
 
+	static AGridManager* GetGridManager(UWorld* WorldContext);
 	static TArray<FGridColumn>* GetGrid(UWorld* WorldContext);
 
 protected:
@@ -57,6 +60,7 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	UPROPERTY()
 	TSubclassOf<ATileActor> TileClass;
 
 

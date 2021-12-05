@@ -50,7 +50,7 @@ TArray<UTile*> UPathfinder::GetTileNeighbors(UTile* Tile, bool IncludePlayers, b
 	for (FIntPoint Direction : CardinalDirections)
 	{
 		FIntPoint NeighborCoords = Tile->Data.Coordinates + Direction;
-		UTile* AdjacentTile = AGridManager::GetTileWithCoords(NeighborCoords, Grid);
+		UTile* AdjacentTile = AGridManager::GetTile(NeighborCoords, Grid);
 		if (!AdjacentTile) continue;
 		if (MovementArea.Num() > 0 && !MovementArea.Contains(AdjacentTile)) continue; // if finding path to target and neighbor is not in movement options, don't consider it
 

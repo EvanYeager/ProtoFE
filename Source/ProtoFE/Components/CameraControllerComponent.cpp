@@ -35,7 +35,8 @@ void UCameraControllerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 void UCameraControllerComponent::MoveCameraUp(float Value)
 {
 	if (Value == 0.0f) return;
-	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
+
+	float Speed = CalculateMoveSpeed(Value);
 	// I have to jump through hoops to move the camera up locally because of the camera's rotation on the pitch
 	float Pitch = FMath::Abs(CameraActor->GetCameraBoom()->GetTargetRotation().Pitch);
 	float PercentZ = Pitch / 90;
@@ -46,7 +47,8 @@ void UCameraControllerComponent::MoveCameraUp(float Value)
 void UCameraControllerComponent::MoveCameraRight(float Value)
 {
 	if (Value == 0.0f) return;
-	float Speed = (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
+
+	float Speed = CalculateMoveSpeed(Value);
 	CameraActor->AddActorLocalOffset(FVector(0, Speed, 0));
 }
 
@@ -75,4 +77,9 @@ void UCameraControllerComponent::SetNormalSpeed()
 void UCameraControllerComponent::FocusLocation(FVector Location)
 {
 	CameraActor->SetActorLocation(FVector(Location.X, Location.Y, CameraActor->GetActorLocation().Z));
+}
+
+float UCameraControllerComponent::CalculateMoveSpeed(float Value)
+{
+	return (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
 }

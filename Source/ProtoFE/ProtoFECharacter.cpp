@@ -13,13 +13,21 @@
 #include "Components/SnapToGrid.h"
 #include "Components/GridOccupyComponent.h"
 #include "tile.h"
+#include "AI/ProtoFEAIController.h"
+#include "Components/ArrowComponent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
 {
-	// Set size for player capsule
+	/** Capsule */
 	GetCapsuleComponent()->InitCapsuleSize(1.0f, 1.0f);
+	// GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, 50));
+	GetCapsuleComponent()->SetVisibility(false);
 
+	/** Arrow Component */
+	GetArrowComponent()->SetVisibility(false);
+
+	/** Mesh */
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	// Don't rotate character to camera direction
@@ -33,11 +41,16 @@ AProtoFECharacter::AProtoFECharacter()
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
-	GetCapsuleComponent()->SetVisibility(false);
+	// lul
+	GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
+	GetCharacterMovement()->MaxAcceleration = 6000.0f;
+
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	AIControllerClass = AProtoFEAIController::StaticClass();
 	
 	ConstructorHelpers::FClassFinder<UUserWidget> StatsWindow(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/CursorOver_StatsWindow'"));
 	if (StatsWindow.Succeeded())
@@ -50,6 +63,7 @@ AProtoFECharacter::AProtoFECharacter()
 	TerrainMoveCost.Add(ETerrain::Mountains, 4);
 	TerrainMoveCost.Add(ETerrain::Impossible, 999);
 
+	/** new components */
 	GridOccupyComponent = CreateDefaultSubobject<UGridOccupyComponent>(TEXT("Grid Occupy Component"));
 	GridSnapComponent = CreateDefaultSubobject<USnapToGrid>(TEXT("Grid Snap Component"));
 }

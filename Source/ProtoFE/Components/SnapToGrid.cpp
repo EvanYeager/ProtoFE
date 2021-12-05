@@ -39,12 +39,8 @@ void USnapToGrid::SnapToClosestTile()
 {
 	if (!SnapToGrid) return;
 
-	TArray<AActor*> Temp;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGridManager::StaticClass(), Temp);
-	if (Temp.Num() == 0) return;
-	GridManager = Cast<AGridManager>(Temp[0]);
-
-	UTile* NewTile = AGridManager::GetTileWithActor(GetOwner(), GridManager);
+	// find closest tile
+	UTile* NewTile = AGridManager::GetTile(GetOwner()->GetActorLocation(), GetWorld());
 	if (!NewTile) return;
 
 	// snap actor to closest tile

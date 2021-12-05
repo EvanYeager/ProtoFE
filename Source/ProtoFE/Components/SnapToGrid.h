@@ -7,7 +7,6 @@
 #include "Interfaces/GridSnapInterface.h"
 #include "SnapToGrid.generated.h"
 
-class AGridManager;
 class ITerrainMod;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -24,8 +23,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid Snap")
 	bool SnapToGrid = true;
-
-	AGridManager* GridManager;
 	
 	UFUNCTION(BlueprintCallable)
 	void SnapToClosestTile();

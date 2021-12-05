@@ -12,6 +12,7 @@ class UPathfinder;
 class UHighlightComponent;
 class UTile;
 class AEnemyCharacter;
+class AProtoFECharacter;
 
 USTRUCT(BlueprintType)
 struct FEnemyRange
@@ -84,6 +85,8 @@ private:
 	void HighlightTile();
 	void OnClick();
 	void Undo();
+
+	void MoveCharacter(AProtoFECharacter* Char);
 
 
 	/** makes the tiles invisible and empties them from the array */

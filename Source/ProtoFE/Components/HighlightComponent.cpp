@@ -60,9 +60,7 @@ void UHighlightComponent::HighlightPath()
 	if (Path.Num() == 0) return;
 
 	for (UTile* Tile : Path)
-	{
 		Tile->Data.TileActor->AddColorLayer(EHighlightColor::BlueHighlight, EHighlightStrength::Strong);
-	}
 }
 
 void UHighlightComponent::ResetPath()
@@ -71,8 +69,6 @@ void UHighlightComponent::ResetPath()
 	if (Path.Num() == 0) return;
 
 	for (UTile* Tile : Path)
-	{
 		Tile->Data.TileActor->RemoveColorLayer();
-	}
 	Owner->Path.Empty();
 }

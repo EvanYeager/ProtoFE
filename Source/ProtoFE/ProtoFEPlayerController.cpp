@@ -17,6 +17,7 @@
 #include "Actors/Characters/EnemyCharacter.h"
 #include "Interfaces/Selectable.h"
 #include "Components/GridOccupyComponent.h"
+#include "AI/ProtoFEAIController.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -62,6 +63,8 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ZoomOut", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraOut);
 	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
+
+	// gameplay functions
 	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnClick);
 	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::Undo);
 }
@@ -72,8 +75,8 @@ void AProtoFEPlayerController::BeginPlay()
 
 	TArray<AActor*> Temp;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGridManager::StaticClass(), Temp);
+	check(Temp.Num() == 1);
 	GridManager = Cast<AGridManager>(Temp[0]);
-
 }
 
 void AProtoFEPlayerController::HighlightTile() 
@@ -84,13 +87,11 @@ void AProtoFEPlayerController::HighlightTile()
 		HighlightComponent->RemoveTileHighlight(SelectedTile);
 
 	FHitResult Hit;
-	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit))
+	if (GetHitResultUnderCursor(ECC_GameTraceChannel1, false, Hit)) // if hit tile
 	{
-		if (ATileActor* Tile = Cast<ATileActor>(Hit.GetActor()))
-		{
-			SelectedTile = AGridManager::GetTileWithActor(Tile, GridManager);
-			HighlightComponent->HighlightSelectedTile();
-		}
+		ATileActor* Tile = Cast<ATileActor>(Hit.GetActor());
+		SelectedTile = GridManager->GetTile(Tile->GetActorLocation());
+		HighlightComponent->HighlightSelectedTile();
 	}
 	else SelectedTile = nullptr;
 }
@@ -122,7 +123,7 @@ void AProtoFEPlayerController::OnClick()
 {
 	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
 	{
-		
+		MoveCharacter(GetSelectedCharacter());
 		GetSelectedCharacter()->UnSelect();
 	}
 	else
@@ -141,6 +142,12 @@ void AProtoFEPlayerController::Undo()
 	RemoveHighlightedTiles();
 }
 
+void AProtoFEPlayerController::MoveCharacter(AProtoFECharacter* Char) 
+{
+	AProtoFEAIController* AIController = Cast<AProtoFEAIController>(Char->GetController());
+	AIController->MoveCharacter(Path);
+}
+
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 {
 	CameraController->FocusLocation(Char->GetActorLocation());
@@ -148,10 +155,12 @@ void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 
 void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char) 
 {
+	// set red highlight in character range
 	for (UTile* Tile : Char->MovementArea)
 	{
 		Tile->Data.TileActor->SetAsEnemyRange();
 	}
+	
 	EnemyRange.Characters.Add(Char);
 	EnemyRange.Tiles.Append(Char->MovementArea);
 }
@@ -161,6 +170,7 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 	// resets all enemy range data
 	ResetEnemyTiles(EnemyRange.Tiles);
 	EnemyRange.Characters.Remove(Char);
+
 	// loop through all highlighted characters and breadth search to find new tiles
 	for (AEnemyCharacter* C : EnemyRange.Characters)
 	{
@@ -176,6 +186,7 @@ void AProtoFEPlayerController::RemoveHighlightedTiles(AEnemyCharacter* Char)
 void AProtoFEPlayerController::RemoveHighlightedTiles() // TODO change name to RemoveEnemyRangeTiles()
 {
 	ResetEnemyTiles(EnemyRange.Tiles);
+
 	for (AEnemyCharacter* Char : EnemyRange.Characters)
 		Char->IsSelected = false;
 	EnemyRange.Characters.Empty();
@@ -193,9 +204,9 @@ void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles)
 bool AProtoFEPlayerController::ShouldPathfind()
 {
 	return GetSelectedCharacter() 
-	&& SelectedTile 
-	&& PreviousTile != SelectedTile 
-	&& (GetSelectedCharacter()->MovementArea.Contains(SelectedTile)  // if selected tile is in character's movement range or occupied tile
+	&& SelectedTile // cursor is on the grid
+	&& PreviousTile != SelectedTile // cursor moved to a new tile
+	&& (GetSelectedCharacter()->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
 		|| SelectedTile == GetSelectedCharacter()->GridOccupyComponent->OccupiedTile);
 }
 

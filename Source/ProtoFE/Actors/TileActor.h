@@ -62,7 +62,7 @@ public:
 	// layers of tile colors and strengths
 	TArray<FColorLayer> Layers;
 
-	void SetColor(EHighlightColor Color);
+	void SetColor(EHighlightColor HighlightColor);
 	void SetStrength(EHighlightStrength Strength);
 
 	void SetAsEnemyRange();

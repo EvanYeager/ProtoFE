@@ -47,5 +47,7 @@ private:
 	AProtoFECamera* CameraActor;
 	
 	float CurrentCameraPanSpeed = NormalCameraPanMultiplier;
+
+	float CalculateMoveSpeed(float Value);
 	
 };
