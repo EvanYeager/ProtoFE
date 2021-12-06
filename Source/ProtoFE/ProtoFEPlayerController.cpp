@@ -18,6 +18,7 @@
 #include "Interfaces/Selectable.h"
 #include "Components/GridOccupyComponent.h"
 #include "AI/ProtoFEAIController.h"
+#include "Interfaces/Commandable.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -122,6 +123,11 @@ void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedCh
 
 void AProtoFEPlayerController::OnLeftClick() 
 {
+	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
+	{
+		GetSelectedCharacter()->UnSelect();
+	}
+	
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 	{
@@ -132,22 +138,20 @@ void AProtoFEPlayerController::OnLeftClick()
 
 void AProtoFEPlayerController::OnRightClick() 
 {
-	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
+	if (GetSelectedCharacter())
 	{
-		MoveCharacter(GetSelectedCharacter());
-		GetSelectedCharacter()->UnSelect();
+		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedCharacter()))
+		{
+			SelectedAsCommandable->ExecuteCommand();
+		}
+		if (GetSelectedCharacter()->ShouldUnSelect())
+			GetSelectedCharacter()->UnSelect();
 	}
 }
 
 void AProtoFEPlayerController::Undo() 
 {
 	RemoveHighlightedTiles();
-}
-
-void AProtoFEPlayerController::MoveCharacter(AProtoFECharacter* Char) 
-{
-	AProtoFEAIController* AIController = Cast<AProtoFEAIController>(Char->GetController());
-	AIController->MoveCharacter(Path);
 }
 
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
@@ -216,46 +220,3 @@ bool AProtoFEPlayerController::ShouldPathfind()
 	&& (GetSelectedCharacter()->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
 		|| SelectedTile == GetSelectedCharacter()->GridOccupyComponent->OccupiedTile);
 }
-
-// void AProtoFEPlayerController::MoveToMouseCursor()
-// {
-// 	// Trace to see what is under the mouse cursor
-// 	FHitResult Hit;
-// 	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-
-// 	if (Hit.bBlockingHit)
-// 	{
-// 		// We hit something, move there
-// 		SetNewMoveDestination(Hit.ImpactPoint);
-// 	}
-// }
-
-// void AProtoFEPlayerController::SetNewMoveDestination(const FVector DestLocation)
-// {
-// 	APawn* const MyPawn = GetPawn();
-// 	if (MyPawn)
-// 	{
-// 		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
-
-// 		// We need to issue move command only if far enough in order for walk animation to play correctly
-// 		if ((Distance > 120.0f))
-// 		{
-// 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
-// 		}
-// 	}
-// }
-
-// void AProtoFEPlayerController::OnSetDestinationPressed()
-// {
-// 	// set flag to keep updating destination until released
-// 	bMoveToMouseCursor = true;
-// }
-
-// void AProtoFEPlayerController::OnSetDestinationReleased()
-// {
-// 	// clear flag to indicate we should stop updating the destination
-// 	bMoveToMouseCursor = false;
-// }
-
-
-

@@ -91,8 +91,6 @@ private:
 	void OnRightClick();
 	void Undo();
 
-	void MoveCharacter(AProtoFECharacter* Char);
-
 
 	/** makes the tiles invisible and empties them from the array */
 	void ResetEnemyTiles(TArray<UTile*> Tiles);

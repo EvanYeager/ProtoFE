@@ -7,6 +7,7 @@
 #include "Tile.h"
 #include "Components/GridOccupyComponent.h"
 #include "Components/HighlightComponent.h"
+#include "AI/ProtoFEAIController.h"
 
 APlayerCharacter::APlayerCharacter() 
 {
@@ -49,6 +50,15 @@ bool APlayerCharacter::ShouldSelect()
    return false;
 }
 
+void APlayerCharacter::ExecuteCommand() 
+{
+   if (AProtoFEAIController* Controller = Cast<AProtoFEAIController>(GetController()))
+   {
+      AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+      Controller->MoveCharacter(PlayerController->Path);
+   }
+}
+
 void APlayerCharacter::HighlightTiles() 
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
@@ -61,13 +71,9 @@ void APlayerCharacter::HighlightTiles()
       PlayerController->HighlightComponent->RemoveTileHighlight(PlayerController->GetSelectedTile());
 
       for (UTile* Tile : MovementArea)
-      {
          PlayerController->HighlightComponent->AddTileHighlight(Tile, EHighlightColor::BlueHighlight, EHighlightStrength::Normal);
-      }
       for (UTile* Tile : AttackRangeTiles)
-      {
          PlayerController->HighlightComponent->AddTileHighlight(Tile, EHighlightColor::RedHighlight, EHighlightStrength::Normal);
-      }
       PlayerController->HighlightComponent->HighlightSelectedTile();
    }
 }
@@ -77,13 +83,9 @@ void APlayerCharacter::ResetTiles()
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
       for (UTile* Tile : MovementArea)
-      {
          PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
-      }
       for (UTile* Tile : AttackRangeTiles)
-      {
          PlayerController->HighlightComponent->RemoveTileHighlight(Tile);
-      }
       PlayerController->HighlightComponent->RemoveTileHighlight(GridOccupyComponent->OccupiedTile);
    }
 }
