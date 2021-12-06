@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Actors/TerrainModifiers/TerrainMod.h"
 #include "Interfaces/GridOccupy.h"
+#include "Tile.h"
 #include "TerrainModifier.generated.h"
 
 class USnapToGrid;
 class UGridOccupyComponent;
 
 UCLASS(Abstract)
-class PROTOFE_API ATerrainModifier : public AActor, public ITerrainMod, public IGridOccupy
+class PROTOFE_API ATerrainModifier : public AActor, public IGridOccupy
 {
 	GENERATED_BODY()
 	
@@ -28,6 +28,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	USnapToGrid* GridSnapComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	ETerrain Terrain = ETerrain::Normal;
 
 	virtual void DeleteFromCurrentTile() override;
 	virtual void OccupyNewTile(UTile* NewTile) override;

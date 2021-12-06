@@ -6,7 +6,7 @@
 #include "UObject/Interface.h"
 #include "GridSnapInterface.generated.h"
 
-class ITerrainMod;
+class ATerrainModifier;
 class AGridManager;
 class UTile;
 
@@ -25,8 +25,8 @@ class PROTOFE_API IGridSnapInterface
 public:
 	AGridManager* GridManager;
 
-	void AddTerrainModToTile(ITerrainMod* TerrainMod, UTile* Tile);
-	void DeleteTerrainModFromGrid(ITerrainMod* TerrainMod);
+	void AddTerrainModToTile(ATerrainModifier* TerrainMod, UTile* Tile);
+	void DeleteTerrainModFromGrid(ATerrainModifier* TerrainMod);
 	AGridManager* FindGridManager();
 
 protected:

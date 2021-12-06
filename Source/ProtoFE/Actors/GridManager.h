@@ -6,7 +6,6 @@
 
 class AProtoFECharacter;
 class ATileActor;
-class ITerrainMod;
 class UTile;
 
 

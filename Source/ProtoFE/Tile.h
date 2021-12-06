@@ -6,7 +6,7 @@
 
 class ATileActor;
 class AProtoFECharacter;
-class ITerrainMod;
+class ATerrainModifier;
 
 UENUM(BlueprintType)
 enum class ETerrain : uint8
@@ -38,7 +38,7 @@ struct FGridData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ATileActor* TileActor = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TScriptInterface<ITerrainMod> TerrainMod = nullptr;
+	ATerrainModifier* TerrainMod = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AProtoFECharacter* OccupiedBy = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

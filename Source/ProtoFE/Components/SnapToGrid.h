@@ -7,7 +7,6 @@
 #include "Interfaces/GridSnapInterface.h"
 #include "SnapToGrid.generated.h"
 
-class ITerrainMod;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOFE_API USnapToGrid : public UActorComponent, public IGridSnapInterface

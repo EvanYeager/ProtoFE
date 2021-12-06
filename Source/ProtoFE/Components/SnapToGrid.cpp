@@ -2,7 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/GridManager.h"
 #include "Actors/TileActor.h"
-#include "Actors/TerrainModifiers/TerrainMod.h"
+#include "Interfaces/GridOccupy.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Tile.h"
 

@@ -1,9 +1,8 @@
 #include "Pathfinder.h"
 #include "ProtoFECharacter.h"
-// #include "Actors/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProtoFEPlayerController.h"
-#include "Actors/TerrainModifiers/TerrainMod.h"
+// #include "Actors/TerrainModifiers/TerrainModifier.h"
 #include "Components/GridOccupyComponent.h"
 
 // Sets default values for this component's properties

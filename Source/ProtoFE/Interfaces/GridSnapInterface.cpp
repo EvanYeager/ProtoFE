@@ -1,24 +1,18 @@
 #include "GridSnapInterface.h"
-#include "Actors/TerrainModifiers/TerrainMod.h"
+#include "Actors/TerrainModifiers/TerrainModifier.h"
 #include "Actors/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tile.h"
 
-void IGridSnapInterface::AddTerrainModToTile(ITerrainMod* TerrainMod, UTile* Tile)
+void IGridSnapInterface::AddTerrainModToTile(ATerrainModifier* TerrainMod, UTile* Tile)
 {
    if (!Tile) return;
-   if (!GridManager)
-   {
-      GridManager = FindGridManager();
-      if (!GridManager) return;
-   }
 
-   AActor* ThisTerrainAsActor = Cast<AActor>(TerrainMod);
-   Tile->Data.TerrainMod = ThisTerrainAsActor;
+   Tile->Data.TerrainMod = TerrainMod;
    Tile->Data.Terrain = TerrainMod->Terrain;
 }
 
-void IGridSnapInterface::DeleteTerrainModFromGrid(ITerrainMod* TerrainMod)
+void IGridSnapInterface::DeleteTerrainModFromGrid(ATerrainModifier* TerrainMod)
 {
    if (!GridManager)
    {
