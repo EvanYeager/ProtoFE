@@ -43,9 +43,10 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 	{
 		HighlightComponent->ResetPath();
 
+		APlayerCharacter* SelectedChar = Cast<APlayerCharacter>(GetSelectedActor().GetObject()); // we know with the "if (ShouldPathfind())" that the selected actor is a player character
 		Path = Pathfinder->FindPathToTarget(
-			GetSelectedCharacter()->MovementArea, 
-			GetSelectedCharacter()->GridOccupyComponent->OccupiedTile, 
+			SelectedChar->MovementArea, 
+			SelectedChar->GridOccupyComponent->OccupiedTile, 
 			SelectedTile
 		);
 		HighlightComponent->HighlightPath();
@@ -111,21 +112,21 @@ void AProtoFEPlayerController::RemoveWidget(UUserWidget* Widget)
 	Widget->RemoveFromParent();
 }
 
-APlayerCharacter* AProtoFEPlayerController::GetSelectedCharacter()
+TScriptInterface<ISelectable> AProtoFEPlayerController::GetSelectedActor()
 {
-	return SelectedCharacter;
+	return SelectedActor;
 }
 
-void AProtoFEPlayerController::SetSelectedCharacter(APlayerCharacter* SelectedChar)
+void AProtoFEPlayerController::SetSelectedActor(TScriptInterface<ISelectable> Actor)
 {
-	SelectedCharacter = SelectedChar;
+	SelectedActor = Actor;
 }
 
 void AProtoFEPlayerController::OnLeftClick() 
 {
-	if (GetSelectedCharacter() && GetSelectedCharacter()->ShouldUnSelect())
+	if (GetSelectedActor() && GetSelectedActor()->ShouldUnSelect())
 	{
-		GetSelectedCharacter()->UnSelect();
+		GetSelectedActor()->UnSelect();
 	}
 	
 	FHitResult Hit;
@@ -138,14 +139,14 @@ void AProtoFEPlayerController::OnLeftClick()
 
 void AProtoFEPlayerController::OnRightClick() 
 {
-	if (GetSelectedCharacter())
+	if (GetSelectedActor())
 	{
-		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedCharacter()))
+		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedActor().GetObject()))
 		{
 			SelectedAsCommandable->ExecuteCommand();
 		}
-		if (GetSelectedCharacter()->ShouldUnSelect())
-			GetSelectedCharacter()->UnSelect();
+		if (GetSelectedActor()->ShouldUnSelect())
+			GetSelectedActor()->UnSelect();
 	}
 }
 
@@ -214,9 +215,13 @@ void AProtoFEPlayerController::ResetEnemyTiles(TArray<UTile*> Tiles)
 
 bool AProtoFEPlayerController::ShouldPathfind()
 {
-	return GetSelectedCharacter() 
-	&& SelectedTile // cursor is on the grid
-	&& PreviousTile != SelectedTile // cursor moved to a new tile
-	&& (GetSelectedCharacter()->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
-		|| SelectedTile == GetSelectedCharacter()->GridOccupyComponent->OccupiedTile);
+	if (APlayerCharacter* SelectedChar = Cast<APlayerCharacter>(GetSelectedActor().GetObject()))
+	{
+		return SelectedChar // selected actor is a player character 
+		&& SelectedTile // cursor is on the grid
+		&& PreviousTile != SelectedTile // cursor moved to a new tile
+		&& (SelectedChar->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
+			|| SelectedTile == SelectedChar->GridOccupyComponent->OccupiedTile);
+	}
+	return false;
 }

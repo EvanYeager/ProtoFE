@@ -22,7 +22,8 @@ void APlayerCharacter::Select()
       if (!GridOccupyComponent->OccupiedTile) return;
 
       // PlayerController->FocusCharacter(this);
-      PlayerController->SetSelectedCharacter(this);
+
+      PlayerController->SetSelectedActor(this);
 
       TArray<AProtoFECharacter*> Chars;
       MovementArea = PlayerController->Pathfinder->BreadthSearch(this, AttackRangeTiles, Chars);
@@ -37,7 +38,7 @@ void APlayerCharacter::UnSelect()
    {
       PlayerController->HighlightComponent->ResetPath();
       ResetTiles();
-      PlayerController->SetSelectedCharacter(nullptr);
+      PlayerController->SetSelectedActor(nullptr);
    }
 }
 
@@ -45,7 +46,7 @@ bool APlayerCharacter::ShouldSelect()
 {
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
-      return PlayerController->GetSelectedCharacter() == nullptr;
+      return PlayerController->GetSelectedActor() == nullptr;
    }
    return false;
 }
@@ -74,6 +75,7 @@ void APlayerCharacter::HighlightTiles()
          PlayerController->HighlightComponent->AddTileHighlight(Tile, EHighlightColor::BlueHighlight, EHighlightStrength::Normal);
       for (UTile* Tile : AttackRangeTiles)
          PlayerController->HighlightComponent->AddTileHighlight(Tile, EHighlightColor::RedHighlight, EHighlightStrength::Normal);
+
       PlayerController->HighlightComponent->HighlightSelectedTile();
    }
 }

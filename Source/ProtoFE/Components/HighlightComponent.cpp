@@ -34,7 +34,7 @@ void UHighlightComponent::HighlightSelectedTile()
 	AddTileHighlight(
 		Owner->GetSelectedTile(),
 		EHighlightColor::DefaultHighlight, 
-		Owner->GetSelectedCharacter() ? EHighlightStrength::Strong : EHighlightStrength::Normal
+		Owner->GetSelectedActor() ? EHighlightStrength::Strong : EHighlightStrength::Normal
 	);	
 }
 

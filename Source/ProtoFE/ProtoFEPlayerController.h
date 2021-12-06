@@ -13,6 +13,7 @@ class UHighlightComponent;
 class UTile;
 class AEnemyCharacter;
 class AProtoFECharacter;
+class ISelectable;
 
 USTRUCT(BlueprintType)
 struct FEnemyRange
@@ -54,10 +55,9 @@ public:
 	UTile* GetSelectedTile();
 
 	UFUNCTION()
-	void SetSelectedCharacter(APlayerCharacter* SelectedChar);
-
-	UFUNCTION(BlueprintCallable)
-	APlayerCharacter* GetSelectedCharacter();
+	void SetSelectedActor(TScriptInterface<ISelectable> SelectedChar);
+	UFUNCTION()
+	TScriptInterface<ISelectable> GetSelectedActor();
 
 	UPathfinder* Pathfinder;
 	UHighlightComponent* HighlightComponent;
@@ -82,8 +82,8 @@ private:
 	/** current tile under cursor. May be null. */
 	UTile* SelectedTile;
 
-	/** player character that is currently selected, if there is one. May be null. */
-	APlayerCharacter* SelectedCharacter = nullptr;
+	/** actor that is currently selected, if there is one. May be null. */
+	TScriptInterface<ISelectable> SelectedActor = nullptr;
 
 
 	void HighlightTile();
