@@ -53,10 +53,11 @@ bool APlayerCharacter::ShouldSelect()
 
 void APlayerCharacter::ExecuteCommand() 
 {
-   if (AProtoFEAIController* Controller = Cast<AProtoFEAIController>(GetController()))
+   if (AProtoFEAIController* AIController = Cast<AProtoFEAIController>(GetController()))
    {
+
       AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-      Controller->MoveCharacter(PlayerController->Path);
+      AIController->MoveCharacter(PlayerController->Path);
    }
 }
 

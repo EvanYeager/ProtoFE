@@ -5,6 +5,7 @@
 #include "TileActor.generated.h"
 
 class UStaticMeshComponent;
+class UBoxComponent;
 
 UENUM(BlueprintType)
 enum class EHighlightColor : uint8
@@ -58,6 +59,8 @@ public:
 	UStaticMeshComponent* EnemyRangePlane;
 	UPROPERTY(VisibleAnywhere)
 	UStaticMesh* PlaneMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UBoxComponent* Collision;
 
 	// layers of tile colors and strengths
 	TArray<FColorLayer> Layers;
@@ -81,6 +84,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 
 private:
 	UMaterialInstanceDynamic* HighlightMaterial;

@@ -3,6 +3,7 @@
 #include "Components/SceneComponent.h"
 #include "ConstructorHelpers.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ATileActor::ATileActor()
@@ -27,6 +28,13 @@ ATileActor::ATileActor()
 	EnemyRangePlane->SetStaticMesh(PlaneMesh);
 	EnemyRangePlane->SetRelativeScale3D(FVector(1, 1, .06f));
 	EnemyRangePlane->SetVisibility(false);
+
+	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	Collision->SetupAttachment(Root);
+	Collision->InitBoxExtent(FVector(60, 60, .01));
+	Collision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	Collision->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+	Collision->bHiddenInGame = false;
 }
 
 // Called when the game starts or when spawned

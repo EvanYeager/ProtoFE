@@ -2,7 +2,6 @@
 #include "ProtoFECharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "ProtoFEPlayerController.h"
-// #include "Actors/TerrainModifiers/TerrainModifier.h"
 #include "Components/GridOccupyComponent.h"
 
 // Sets default values for this component's properties
@@ -15,24 +14,9 @@ void UPathfinder::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Owner = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	check(Owner);
+	Grid = *AGridManager::GetGrid(GetWorld());
 }
 
-bool UPathfinder::IsTileOccupied(UTile* Tile)
-{
-	return IsValid(Tile->Data.OccupiedBy);
-}
-
-bool UPathfinder::IsCurrentTileOccupiedByPlayer()
-{
-	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Player; // IsTileOccupied() is there to protect from nullptrs
-}
-
-bool UPathfinder::IsCurrentTileOccupiedByEnemy()
-{
-	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Enemy; // IsTileOccupied() is there to protect from nullptrs
-}
 
 TArray<UTile*> UPathfinder::GetTileNeighbors(UTile* Tile, bool IncludePlayers, bool IncludeEnemies)
 {
@@ -69,6 +53,20 @@ TArray<UTile*> UPathfinder::GetTileNeighbors(UTile* Tile, bool IncludePlayers, b
 	return OutNeighbors;
 }
 
+bool UPathfinder::IsTileOccupied(UTile* Tile)
+{
+	return IsValid(Tile->Data.OccupiedBy);
+}
+
+bool UPathfinder::IsCurrentTileOccupiedByPlayer()
+{
+	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Player; // IsTileOccupied() is there to protect from nullptrs
+}
+
+bool UPathfinder::IsCurrentTileOccupiedByEnemy()
+{
+	return IsTileOccupied(CurrentTile) && CurrentTile->Data.OccupiedBy->Information.Team == ETeam::Enemy; // IsTileOccupied() is there to protect from nullptrs
+}
 
 TArray<UTile*> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling, TArray<UTile*>& TilesToMakeRed, TArray<AProtoFECharacter*>& CharsInRange)
 {
@@ -80,7 +78,6 @@ TArray<UTile*> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling, T
 	UTile* StartTile = CharacterCalling->GridOccupyComponent->OccupiedTile;
 	Queue.Add(StartTile);
 	ValidTiles.Add(StartTile);
-	Grid = *AGridManager::GetGrid(GetWorld());
 	ResetFinalCosts();
 
 	for (int32 i = 0; i < NumOfPossibleTiles; i++)
@@ -110,7 +107,7 @@ void UPathfinder::ClearMemberVariables()
 	Queue.Empty();
 	EstablishedTiles.Empty();
 	MovementArea.Empty();
-	FinalCostFromCurrentNeighbor = 0;
+	FinalCostFromCurrentNeighbor = -1;
 }
 
 int32 UPathfinder::GetMovementOptionArea(int32 Movement)
@@ -221,7 +218,6 @@ TArray<UTile*> UPathfinder::FindPathToTarget(TArray<UTile*> AvailableMovementAre
 	int32 EstimatedCost = GetEstimatedCostToTile(DestinationTile);
 	CurrentTile->FinalCost = EstimatedCost;
 	CurrentTile->EstimatedCostToTarget = EstimatedCost;
-	Queue.AddUnique(InitialTile);
 
 	Pathfind();
 	
@@ -245,6 +241,7 @@ void UPathfinder::ResetPathfindingTileVars()
 
 void UPathfinder::Pathfind()
 {
+	Queue.AddUnique(InitialTile);
 	while (Queue.Num() > 0)
 	{
 		CurrentTile = FindCheapestInQueue();
@@ -292,8 +289,8 @@ UTile* UPathfinder::FindCheapestInQueue()
 bool UPathfinder::QueueElementIsBetterThanQueueCheapest(UTile* QueueElem, UTile* QueueCheapest)
 {
 	// Conditions for being true: QueueElem FinalCost is less than QueueCheapest's, or if they are equal but QueueElem is closer to destination
-	return (QueueElem->FinalCost < QueueCheapest->FinalCost) || 
-	(QueueElem->FinalCost == QueueCheapest->FinalCost && 
+	return (QueueElem->CostFromStart < QueueCheapest->CostFromStart) || 
+	(QueueElem->CostFromStart == QueueCheapest->CostFromStart && 
 	QueueElem->EstimatedCostToTarget < QueueCheapest->EstimatedCostToTarget);
 }
 
