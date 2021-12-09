@@ -83,3 +83,8 @@ float UCameraControllerComponent::CalculateMoveSpeed(float Value)
 {
 	return (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;
 }
+
+void UCameraControllerComponent::RotateCamera(float Value) 
+{
+	CameraActor->AddActorWorldRotation(FRotator(0, Value * 2, 0));
+}

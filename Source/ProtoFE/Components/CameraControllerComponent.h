@@ -33,6 +33,7 @@ public:
 	void ZoomCameraOut();
 	void SetFastSpeed();
 	void SetNormalSpeed();
+	void RotateCamera(float Value);
 	
 	void FocusLocation(FVector Location);
 

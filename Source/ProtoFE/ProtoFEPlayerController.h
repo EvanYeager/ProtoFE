@@ -85,18 +85,17 @@ private:
 	/** actor that is currently selected, if there is one. May be null. */
 	TScriptInterface<ISelectable> SelectedActor = nullptr;
 
-
 	void HighlightTile();
-	void OnLeftClick();
-	void OnRightClick();
-	void Undo();
-
 
 	/** makes the tiles invisible and empties them from the array */
 	void ResetEnemyTiles(TArray<UTile*> Tiles);
 
 	bool ShouldPathfind();
 	
+	void OnLeftClick();
+	void OnRightClick();
+	void Undo();
+	void HandleCameraRotate(float Value);
 };
 
 

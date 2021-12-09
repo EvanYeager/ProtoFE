@@ -65,6 +65,7 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ZoomOut", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraOut);
 	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
+	InputComponent->BindAxis("RotateCamera", this, &AProtoFEPlayerController::HandleCameraRotate);
 
 	// gameplay functions
 	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnLeftClick);
@@ -122,38 +123,6 @@ void AProtoFEPlayerController::SetSelectedActor(TScriptInterface<ISelectable> Ac
 	SelectedActor = Actor;
 }
 
-void AProtoFEPlayerController::OnLeftClick() 
-{
-	if (GetSelectedActor() && GetSelectedActor()->ShouldUnSelect())
-	{
-		GetSelectedActor()->UnSelect();
-	}
-	
-	FHitResult Hit;
-	if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
-	{
-		if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
-			ActorClicked->HandleSelection();
-	}
-}
-
-void AProtoFEPlayerController::OnRightClick() 
-{
-	if (GetSelectedActor())
-	{
-		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedActor().GetObject()))
-		{
-			SelectedAsCommandable->ExecuteCommand();
-		}
-		if (GetSelectedActor()->ShouldUnSelect())
-			GetSelectedActor()->UnSelect();
-	}
-}
-
-void AProtoFEPlayerController::Undo() 
-{
-	RemoveHighlightedTiles();
-}
 
 void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
 {
@@ -225,3 +194,45 @@ bool AProtoFEPlayerController::ShouldPathfind()
 	}
 	return false;
 }
+
+void AProtoFEPlayerController::OnLeftClick() 
+{
+	if (GetSelectedActor() && GetSelectedActor()->ShouldUnSelect())
+	{
+		GetSelectedActor()->UnSelect();
+	}
+	
+	FHitResult Hit;
+	if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
+	{
+		if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
+			ActorClicked->HandleSelection();
+	}
+}
+
+void AProtoFEPlayerController::OnRightClick() 
+{
+	if (GetSelectedActor())
+	{
+		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedActor().GetObject()))
+		{
+			SelectedAsCommandable->ExecuteCommand();
+		}
+		if (GetSelectedActor()->ShouldUnSelect())
+			GetSelectedActor()->UnSelect();
+	}
+}
+
+void AProtoFEPlayerController::Undo() 
+{
+	RemoveHighlightedTiles();
+}
+
+void AProtoFEPlayerController::HandleCameraRotate(float Value) 
+{
+	if (IsInputKeyDown(EKeys::MiddleMouseButton))
+	{
+		CameraController->RotateCamera(Value);
+	}
+}
+
