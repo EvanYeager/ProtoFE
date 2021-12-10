@@ -15,6 +15,8 @@
 #include "tile.h"
 #include "AI/ProtoFEAIController.h"
 #include "Components/ArrowComponent.h"
+#include "ConstructorHelpers.h"
+#include "UI/ToolTipParent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
@@ -56,6 +58,10 @@ AProtoFECharacter::AProtoFECharacter()
 	if (StatsWindow.Succeeded())
 		StatsWindowClass = StatsWindow.Class;
 
+	ConstructorHelpers::FClassFinder<UUserWidget> ToolTip(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/ToolTip'"));
+	if (ToolTip.Succeeded())
+		ToolTipClass = ToolTip.Class;
+
 	// terrain move cost
 	TerrainMoveCost.Add(ETerrain::Normal, 1);
 	TerrainMoveCost.Add(ETerrain::Foliage, 2);
@@ -66,6 +72,7 @@ AProtoFECharacter::AProtoFECharacter()
 	/** new components */
 	GridOccupyComponent = CreateDefaultSubobject<UGridOccupyComponent>(TEXT("Grid Occupy Component"));
 	GridSnapComponent = CreateDefaultSubobject<USnapToGrid>(TEXT("Grid Snap Component"));
+
 }
 
 void AProtoFECharacter::PostEditMove(bool bFinished)
@@ -105,11 +112,14 @@ void AProtoFECharacter::Select() {}
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {
 	DisplayStats();
+	GetWorld()->GetTimerManager().SetTimer(ToolTipTimer, this, &AProtoFECharacter::CreateToolTipWindow, 0.5f, false);
 }
 
 void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
 {
 	RemoveStats();
+	GetWorld()->GetTimerManager().ClearTimer(ToolTipTimer);
+	RemoveToolTip();
 }
 
 void AProtoFECharacter::BreadthSearch() {}
@@ -148,4 +158,19 @@ void AProtoFECharacter::RemoveStats()
 	}
 }
 
+void AProtoFECharacter::CreateToolTipWindow()
+{
+	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	{
+		ToolTipObj = Cast<UToolTipParent>(PlayerController->DisplayWidget(ToolTipClass));
+		ToolTipObj->FocusedChar = this;
+	}
+}
  
+void AProtoFECharacter::RemoveToolTip()
+{
+	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	{
+		PlayerController->RemoveWidget(ToolTipObj);
+	}
+}

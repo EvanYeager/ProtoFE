@@ -12,6 +12,7 @@ class UStatsWindowParent;
 class UUserWidget;
 class USnapToGrid;
 class UGridOccupyComponent;
+class UToolTipParent;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -147,9 +148,19 @@ protected:
 	virtual void DisplayStats();
 	UFUNCTION()
 	virtual void RemoveStats();
+	UFUNCTION()
+	virtual void CreateToolTipWindow() override;
 private:
+
+	void RemoveToolTip();
 
 	TSubclassOf<UUserWidget> StatsWindowClass;
 	UStatsWindowParent* StatsWindowWidget;
+
+	TSubclassOf<UUserWidget> ToolTipClass;
+	UToolTipParent* ToolTipObj;
+
+	FTimerHandle ToolTipTimer;
+
 };
 

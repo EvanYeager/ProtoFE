@@ -19,6 +19,7 @@
 #include "Components/GridOccupyComponent.h"
 #include "AI/ProtoFEAIController.h"
 #include "Interfaces/Commandable.h"
+#include "ConstructorHelpers.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -29,6 +30,10 @@ AProtoFEPlayerController::AProtoFEPlayerController()
 	CameraController = CreateDefaultSubobject<UCameraControllerComponent>(TEXT("Camera Controller"));
 	Pathfinder = CreateDefaultSubobject<UPathfinder>(TEXT("Pathfinder"));
 	HighlightComponent = CreateDefaultSubobject<UHighlightComponent>(TEXT("Highlight Component"));
+
+	ConstructorHelpers::FClassFinder<UUserWidget> EscMenu(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/EscapeMenu'"));
+	if (EscMenu.Succeeded())
+		EscapeMenuClass = EscMenu.Class;
 }
 
 
@@ -64,13 +69,14 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ZoomIn", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, CameraController, &UCameraControllerComponent::ZoomCameraOut);
 	InputComponent->BindAction("Back", IE_Pressed, CameraController, &UCameraControllerComponent::SetFastSpeed);
+	InputComponent->BindAction("Back", IE_Pressed, this, &AProtoFEPlayerController::UnSelectEnemies);
 	InputComponent->BindAction("Back", IE_Released, CameraController, &UCameraControllerComponent::SetNormalSpeed);
 	InputComponent->BindAxis("RotateCamera", this, &AProtoFEPlayerController::HandleCameraRotate);
 
 	// gameplay functions
 	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnLeftClick);
 	InputComponent->BindAction("Command", IE_Pressed, this, &AProtoFEPlayerController::OnRightClick);
-	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::Undo);
+	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::ToggleEscapeMenu);
 }
 
 void AProtoFEPlayerController::BeginPlay() 
@@ -223,7 +229,25 @@ void AProtoFEPlayerController::OnRightClick()
 	}
 }
 
-void AProtoFEPlayerController::Undo() 
+void AProtoFEPlayerController::ToggleEscapeMenu() 
+{
+	if (!EscapeMenuObj) // hasn't been created yet
+	{
+		EscapeMenuObj = DisplayWidget(EscapeMenuClass);
+		return;
+	}
+	if (EscapeMenuObj->IsInViewport()) // is showing
+	{
+		RemoveWidget(EscapeMenuObj);
+	}
+	else // has been created but isn't showing on screen
+	{
+		EscapeMenuObj = DisplayWidget(EscapeMenuClass);
+	}
+	
+}
+
+void AProtoFEPlayerController::UnSelectEnemies() 
 {
 	RemoveHighlightedTiles();
 }

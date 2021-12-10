@@ -26,4 +26,5 @@ class PROTOFE_API IHoverable
 public:
 	virtual void OnCursorOver(UPrimitiveComponent* comp) = 0;
 	virtual void EndCursorOver(UPrimitiveComponent* comp) = 0;
+	virtual void CreateToolTipWindow();
 };

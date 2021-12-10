@@ -85,6 +85,11 @@ private:
 	/** actor that is currently selected, if there is one. May be null. */
 	TScriptInterface<ISelectable> SelectedActor = nullptr;
 
+	UPROPERTY()
+	TSubclassOf<UUserWidget> EscapeMenuClass;
+	UPROPERTY()
+	UUserWidget* EscapeMenuObj;
+
 	void HighlightTile();
 
 	/** makes the tiles invisible and empties them from the array */
@@ -94,7 +99,8 @@ private:
 	
 	void OnLeftClick();
 	void OnRightClick();
-	void Undo();
+	void ToggleEscapeMenu();
+	void UnSelectEnemies();
 	void HandleCameraRotate(float Value);
 };
 
