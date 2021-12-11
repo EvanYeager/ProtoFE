@@ -17,6 +17,8 @@
 #include "Components/ArrowComponent.h"
 #include "ConstructorHelpers.h"
 #include "UI/ToolTipParent.h"
+#include "UI/HealthBarParent.h"
+#include "Components/WidgetComponent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
@@ -62,6 +64,10 @@ AProtoFECharacter::AProtoFECharacter()
 	if (ToolTip.Succeeded())
 		ToolTipClass = ToolTip.Class;
 
+	ConstructorHelpers::FClassFinder<UUserWidget> HealthBar(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/HealthBar'"));
+	if (HealthBar.Succeeded())
+		HealthBarClass = HealthBar.Class;
+
 	// terrain move cost
 	TerrainMoveCost.Add(ETerrain::Normal, 1);
 	TerrainMoveCost.Add(ETerrain::Foliage, 2);
@@ -72,6 +78,12 @@ AProtoFECharacter::AProtoFECharacter()
 	/** new components */
 	GridOccupyComponent = CreateDefaultSubobject<UGridOccupyComponent>(TEXT("Grid Occupy Component"));
 	GridSnapComponent = CreateDefaultSubobject<USnapToGrid>(TEXT("Grid Snap Component"));
+	HealthBarComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Health bar"));
+	HealthBarComponent->SetupAttachment(GetMesh());
+	HealthBarComponent->SetWidgetClass(HealthBarClass);
+	HealthBarComponent->SetRelativeLocation(FVector(0, 0, 200));
+	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarComponent->SetDrawSize(FVector2D(100, 100));
 
 }
 
@@ -92,6 +104,11 @@ void AProtoFECharacter::BeginPlay()
 	// on cursor over
 	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
 	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
+	
+	if (UHealthBarParent* HB = Cast<UHealthBarParent>(HealthBarComponent->GetUserWidgetObject()))
+	{
+		HB->Char = this;
+	}
 }
 
 void AProtoFECharacter::Tick(float DeltaSeconds)
@@ -112,7 +129,7 @@ void AProtoFECharacter::Select() {}
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {
 	DisplayStats();
-	GetWorld()->GetTimerManager().SetTimer(ToolTipTimer, this, &AProtoFECharacter::CreateToolTipWindow, 0.5f, false);
+	GetWorld()->GetTimerManager().SetTimer(ToolTipTimer, this, &AProtoFECharacter::CreateToolTipWindow, ToolTipDelay, false);
 }
 
 void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)

@@ -22,5 +22,8 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	AProtoFECharacter* FocusedChar;
+
+	UFUNCTION(BlueprintCallable)
+	void Test();
 	
 };

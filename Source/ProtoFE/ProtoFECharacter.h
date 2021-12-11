@@ -8,11 +8,13 @@
 #include "Interfaces/Hoverable.h"
 #include "ProtoFECharacter.generated.h"
 
-class UStatsWindowParent;
-class UUserWidget;
 class USnapToGrid;
 class UGridOccupyComponent;
+class UStatsWindowParent;
 class UToolTipParent;
+class UHealthBarParent;
+class UUserWidget;
+class UWidgetComponent;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -117,6 +119,8 @@ public:
 	UGridOccupyComponent* GridOccupyComponent;
 	UPROPERTY(VisibleAnywhere)
 	USnapToGrid* GridSnapComponent;
+	UPROPERTY(VisibleAnywhere)
+	UWidgetComponent* HealthBarComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterInfo Information = FCharacterInfo();
@@ -160,7 +164,12 @@ private:
 	TSubclassOf<UUserWidget> ToolTipClass;
 	UToolTipParent* ToolTipObj;
 
+	TSubclassOf<UUserWidget> HealthBarClass;
+	UHealthBarParent* HealthBarObj;
+
 	FTimerHandle ToolTipTimer;
+	UPROPERTY(EditAnywhere)
+	float ToolTipDelay = 0.5f;
 
 };
 

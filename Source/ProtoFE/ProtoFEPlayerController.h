@@ -28,6 +28,13 @@ public:
 	
 };
 
+UENUM(BlueprintType)
+enum class EDisplayMode : uint8
+{
+	Normal UMETA(DisplayName="Normal"),
+	Detailed UMETA(DisplayName="Detailed")
+};
+
 UCLASS()
 class AProtoFEPlayerController : public APlayerController
 {
@@ -68,6 +75,9 @@ public:
 	UTile* PreviousTile;
 	
 	TArray<UTile*> Path;
+
+	UPROPERTY(BlueprintReadOnly)
+	EDisplayMode DisplayMode = EDisplayMode::Normal;
 	
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
@@ -102,6 +112,8 @@ private:
 	void ToggleEscapeMenu();
 	void UnSelectEnemies();
 	void HandleCameraRotate(float Value);
+	void SetAltMode();
+	void SetNormalMode();
 };
 
 

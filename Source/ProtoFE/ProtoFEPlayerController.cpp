@@ -77,6 +77,8 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Select", IE_Pressed, this, &AProtoFEPlayerController::OnLeftClick);
 	InputComponent->BindAction("Command", IE_Pressed, this, &AProtoFEPlayerController::OnRightClick);
 	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::ToggleEscapeMenu);
+	InputComponent->BindAction("Alt", IE_Pressed, this, &AProtoFEPlayerController::SetAltMode);
+	InputComponent->BindAction("Alt", IE_Released, this, &AProtoFEPlayerController::SetNormalMode);
 }
 
 void AProtoFEPlayerController::BeginPlay() 
@@ -258,5 +260,15 @@ void AProtoFEPlayerController::HandleCameraRotate(float Value)
 	{
 		CameraController->RotateCamera(Value);
 	}
+}
+
+void AProtoFEPlayerController::SetAltMode()
+{
+	DisplayMode = EDisplayMode::Detailed;
+}
+
+void AProtoFEPlayerController::SetNormalMode()
+{
+	DisplayMode = EDisplayMode::Normal;
 }
 
