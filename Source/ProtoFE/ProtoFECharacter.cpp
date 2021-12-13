@@ -23,9 +23,10 @@
 
 AProtoFECharacter::AProtoFECharacter()
 {
+	RootComponent = GetMesh();
+	GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, 80));
 	/** Capsule */
 	GetCapsuleComponent()->InitCapsuleSize(1.0f, 1.0f);
-	// GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, 50));
 	GetCapsuleComponent()->SetVisibility(false);
 
 	/** Arrow Component */
@@ -33,6 +34,7 @@ AProtoFECharacter::AProtoFECharacter()
 
 	/** Mesh */
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+	GetMesh()->SetRelativeLocation(FVector(0, 0, -83));
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -102,8 +104,11 @@ void AProtoFECharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// on cursor over
-	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
-	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
+	// GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
+	// GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
+
+	GetCapsuleComponent()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
+	GetCapsuleComponent()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
 	
 	if (UHealthBarParent* HB = Cast<UHealthBarParent>(HealthBarComponent->GetUserWidgetObject()))
 	{
