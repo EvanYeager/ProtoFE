@@ -168,8 +168,6 @@ private:
 	UHealthBarParent* HealthBarObj;
 
 	FTimerHandle ToolTipTimer;
-	UPROPERTY(EditAnywhere)
-	float ToolTipDelay = 0.5f;
 
 };
 

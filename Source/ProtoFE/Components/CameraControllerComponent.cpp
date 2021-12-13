@@ -79,6 +79,17 @@ void UCameraControllerComponent::FocusLocation(FVector Location)
 	CameraActor->SetActorLocation(FVector(Location.X, Location.Y, CameraActor->GetActorLocation().Z));
 }
 
+void UCameraControllerComponent::SetNormalCameraPanSpeed(float Speed)
+{
+	NormalCameraPanMultiplier = Speed;
+	CurrentCameraPanSpeed = Speed;
+}
+
+void UCameraControllerComponent::SetFastCameraPanSpeed(float Speed)
+{
+	FastCameraPanMultiplier = Speed;
+}
+
 float UCameraControllerComponent::CalculateMoveSpeed(float Value)
 {
 	return (Value * 2.0f + (CameraActor->GetCameraBoom()->TargetArmLength / 90 * Value)) * CurrentCameraPanSpeed;

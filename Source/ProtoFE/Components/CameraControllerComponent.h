@@ -37,6 +37,11 @@ public:
 	
 	void FocusLocation(FVector Location);
 
+	UFUNCTION(BlueprintCallable)
+	void SetNormalCameraPanSpeed(float Speed = 1.0f);
+	UFUNCTION(BlueprintCallable)
+	void SetFastCameraPanSpeed(float Speed = 2.0f);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

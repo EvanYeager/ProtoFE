@@ -129,7 +129,10 @@ void AProtoFECharacter::Select() {}
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {
 	DisplayStats();
-	GetWorld()->GetTimerManager().SetTimer(ToolTipTimer, this, &AProtoFECharacter::CreateToolTipWindow, ToolTipDelay, false);
+	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	{
+		GetWorld()->GetTimerManager().SetTimer(ToolTipTimer, this, &AProtoFECharacter::CreateToolTipWindow, PlayerController->ToolTipDelay, false);
+	}
 }
 
 void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)

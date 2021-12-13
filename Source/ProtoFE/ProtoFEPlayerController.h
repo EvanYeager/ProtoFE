@@ -66,8 +66,12 @@ public:
 	UFUNCTION()
 	TScriptInterface<ISelectable> GetSelectedActor();
 
+	UPROPERTY(BlueprintReadOnly)
 	UPathfinder* Pathfinder;
+	UPROPERTY(BlueprintReadOnly)
 	UHighlightComponent* HighlightComponent;
+	UPROPERTY(BlueprintReadOnly)
+	UCameraControllerComponent* CameraController;
 
 	FEnemyRange EnemyRange;
 
@@ -78,6 +82,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	EDisplayMode DisplayMode = EDisplayMode::Normal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ToolTipDelay = 0.5f;
 	
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
@@ -85,8 +92,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY()
-	UCameraControllerComponent* CameraController;
 
 	UPROPERTY()
 	/** current tile under cursor. May be null. */
