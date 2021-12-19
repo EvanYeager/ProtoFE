@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/TileActor.h"
 #include "ProtoFEAIController.h"
+#include "Actors/GridManager.h"
 
 UBTTask_InitializeMove::UBTTask_InitializeMove() 
 {
@@ -17,10 +18,6 @@ EBTNodeResult::Type UBTTask_InitializeMove::ExecuteTask(UBehaviorTreeComponent& 
    AProtoFEAIController* AIController = Cast<AProtoFEAIController>(OwnerComp.GetAIOwner());
    if (AIController->Path.Num() == 0) return EBTNodeResult::Succeeded;
 
-   FVector MoveLoc = AIController->Path[0]->Data.TileActor->GetActorLocation();
-   MoveLoc.Z = AIController->GetPawn()->GetActorLocation().Z;
-   OwnerComp.GetBlackboardComponent()->SetValueAsVector(TEXT("MoveLocation"), MoveLoc);
-   UE_LOG(LogTemp, Warning, TEXT("initializing move. Path num is: %i; move location is: %s"), AIController->Path.Num(), *MoveLoc.ToString());
    OwnerComp.GetBlackboardComponent()->SetValueAsInt(TEXT("TilesMovedTo"), 0);
    OwnerComp.GetBlackboardComponent()->SetValueAsInt(TEXT("NumOfTilesInPath"), AIController->Path.Num());
    return EBTNodeResult::Succeeded;

@@ -15,6 +15,7 @@ class UToolTipParent;
 class UHealthBarParent;
 class UUserWidget;
 class UWidgetComponent;
+class UItem;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -124,6 +125,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterInfo Information = FCharacterInfo();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UItem*> Inventory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<ETerrain, int> TerrainMoveCost;

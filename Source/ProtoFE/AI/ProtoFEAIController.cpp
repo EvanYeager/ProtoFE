@@ -21,11 +21,11 @@ void AProtoFEAIController::BeginPlay()
    
 }
 
-void AProtoFEAIController::MoveCharacter(TArray<UTile*> Path) 
+void AProtoFEAIController::MoveCharacter(TArray<UTile*> path) 
 {
    if (AIBehavior)
    {
-      this->Path = Path;
+      this->Path = path;
       RunBehaviorTree(AIBehavior);
    }
 }

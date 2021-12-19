@@ -19,22 +19,23 @@
 #include "UI/ToolTipParent.h"
 #include "UI/HealthBarParent.h"
 #include "Components/WidgetComponent.h"
+#include "Items/Weapons/Weapon.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
 {
-	RootComponent = GetMesh();
-	GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, 80));
+	// RootComponent = GetMesh();
+	// GetCapsuleComponent()->SetRelativeLocation(FVector(0, 0, 80));
 	/** Capsule */
-	GetCapsuleComponent()->InitCapsuleSize(1.0f, 1.0f);
+	GetCapsuleComponent()->InitCapsuleSize(95.0f, 40.0f);
 	GetCapsuleComponent()->SetVisibility(false);
 
 	/** Arrow Component */
-	GetArrowComponent()->SetVisibility(false);
+	// GetArrowComponent()->SetVisibility(false);
 
 	/** Mesh */
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-	GetMesh()->SetRelativeLocation(FVector(0, 0, -83));
+	GetMesh()->SetRelativeLocation(FVector(0, 0, -92));
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -48,8 +49,8 @@ AProtoFECharacter::AProtoFECharacter()
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
 
 	// lul
-	GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
-	GetCharacterMovement()->MaxAcceleration = 6000.0f;
+	// GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
+	// GetCharacterMovement()->MaxAcceleration = 6000.0f;
 
 
 	// Activate ticking in order to update the cursor every frame.
@@ -87,6 +88,12 @@ AProtoFECharacter::AProtoFECharacter()
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawSize(FVector2D(100, 100));
 
+	FWeaponStats Stats = FWeaponStats();
+	Stats.Crit = 0.80;
+	UWeapon* Weapon1 = NewObject<UWeapon>();
+	Weapon1->SetStats(Stats);
+	Inventory.Add(Weapon1);
+
 }
 
 void AProtoFECharacter::PostEditMove(bool bFinished)
@@ -104,11 +111,8 @@ void AProtoFECharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// on cursor over
-	// GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
-	// GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
-
-	GetCapsuleComponent()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
-	GetCapsuleComponent()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
+	GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
+	GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
 	
 	if (UHealthBarParent* HB = Cast<UHealthBarParent>(HealthBarComponent->GetUserWidgetObject()))
 	{

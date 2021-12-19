@@ -10,6 +10,8 @@
 #include "CoreMisc.h"
 
 
+const int AGridManager::PlaneLength = 120;
+
 // Sets default values
 AGridManager::AGridManager()
 {

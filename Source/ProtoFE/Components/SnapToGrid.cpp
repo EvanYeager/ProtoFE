@@ -44,7 +44,9 @@ void USnapToGrid::SnapToClosestTile()
 	if (!NewTile) return;
 
 	// snap actor to closest tile
-	GetOwner()->SetActorLocation(NewTile->Data.TileActor->GetActorLocation()); 
+	FVector NewLoc = NewTile->Data.TileActor->GetActorLocation();
+	NewLoc.Z = GetOwner()->GetActorLocation().Z;
+	GetOwner()->SetActorLocation(NewLoc); 
 
 	if (IGridOccupy* OwnerAsGridOccupy = Cast<IGridOccupy>(GetOwner()))
 		OwnerAsGridOccupy->MoveTiles(NewTile);

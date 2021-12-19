@@ -38,9 +38,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Grid)
 	bool ShowTileColorInEditor = true;
 
-	// should be const but lul
-	UPROPERTY()	
-	int PlaneLength = 120;
+	const static int PlaneLength;
 
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
