@@ -3,6 +3,8 @@
 #include "UObject/ConstructorHelpers.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Tile.h"
+#include "ProtoFECharacter.h"
+#include "Components/GridOccupyComponent.h"
 
 
 #include "Actors/TileActor.h"
@@ -30,29 +32,11 @@ void AProtoFEAIController::MoveCharacter(TArray<UTile*> path)
    }
 }
 
-// void AProtoFEPlayerController::SetNewMoveDestination(const FVector DestLocation)
-// {
-// 	APawn* const MyPawn = GetPawn();
-// 	if (MyPawn)
-// 	{
-// 		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
-
-// 		// We need to issue move command only if far enough in order for walk animation to play correctly
-// 		if ((Distance > 120.0f))
-// 		{
-// 			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
-// 		}
-// 	}
-// }
-
-// void AProtoFEPlayerController::OnSetDestinationPressed()
-// {
-// 	// set flag to keep updating destination until released
-// 	bMoveToMouseCursor = true;
-// }
-
-// void AProtoFEPlayerController::OnSetDestinationReleased()
-// {
-// 	// clear flag to indicate we should stop updating the destination
-// 	bMoveToMouseCursor = false;
-// }
+void AProtoFEAIController::OnMoveFinished() 
+{
+   if (Path.Num() > 0)
+   {
+      AProtoFECharacter* Char = Cast<AProtoFECharacter>(GetCharacter());
+      Char->GridOccupyComponent->OccupiedTile = Path[Path.Num() - 1];
+   }
+}

@@ -16,6 +16,7 @@ class PROTOFE_API AProtoFEAIController : public AAIController
 public:
 	AProtoFEAIController();
 	void MoveCharacter(TArray<UTile*> path);
+	void OnMoveFinished();
 
 	TArray<UTile*> Path;
 

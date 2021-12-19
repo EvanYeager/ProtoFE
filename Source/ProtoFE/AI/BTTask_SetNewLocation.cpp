@@ -19,18 +19,18 @@ EBTNodeResult::Type UBTTask_SetNewLocation::ExecuteTask(UBehaviorTreeComponent& 
    Super::ExecuteTask(OwnerComp, NodeMemory);
 
    TilesMovedInOneGo = 1;
+   AProtoFEAIController* AIController = Cast<AProtoFEAIController>(OwnerComp.GetAIOwner());
 
    int MoveCount = OwnerComp.GetBlackboardComponent()->GetValueAsInt(TEXT("TilesMovedTo"));
    int PathLength = OwnerComp.GetBlackboardComponent()->GetValueAsInt(TEXT("NumOfTilesInPath"));
    if (MoveCount >= PathLength) // if character reached final tile
    {
+      AIController->OnMoveFinished();
       OwnerComp.StopLogic("moving is complete");
       return EBTNodeResult::Failed;
    }
    else
    {
-      AProtoFEAIController* AIController = Cast<AProtoFEAIController>(OwnerComp.GetAIOwner());
-
       UTile* TargetTile = FindTargetTile(AIController, MoveCount);
 
       OwnerComp.GetBlackboardComponent()->SetValueAsVector(TEXT("MoveLocation"), TargetTile->Data.TileActor->GetActorLocation());
