@@ -25,7 +25,7 @@ AGridManager::AGridManager()
 
 
 void AGridManager::OnConstruction(const FTransform& Transform) 
-{	
+{
 	// set visibility in editor
 	for (FGridColumn Col : Grid)
 	{
@@ -64,7 +64,7 @@ void AGridManager::CreateGrid()
 	{
 		Grid.Add(FGridColumn());
 	}
-	// create tiles
+	// create tile data
 	for (int y = 0; y < GridY; y++)
 	{
 		for (int x = 0; x < GridX; x++)
@@ -91,6 +91,7 @@ void AGridManager::CreateGrid()
 		for (auto Element : Locations)
 		{
 			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
+			SpawnParams.Name = FName("Tile", count++);
 			Element.Key->Data.TileActor = GetWorld()->SpawnActor<ATileActor>(TileClass, Element.Value, FRotator(0, 0, 0), SpawnParams);
 		}
 	

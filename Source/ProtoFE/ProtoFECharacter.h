@@ -16,6 +16,7 @@ class UHealthBarParent;
 class UUserWidget;
 class UWidgetComponent;
 class UItem;
+class UInventoryComponent;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -126,8 +127,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterInfo Information = FCharacterInfo();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UItem*> Inventory;
+	UPROPERTY(VisibleAnywhere)
+	UInventoryComponent* InventoryComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<ETerrain, int> TerrainMoveCost;
@@ -141,7 +142,9 @@ public:
 
 	virtual void Select() override;
 
-	// TODO items
+	virtual void Wait();
+	/** makes the character unable to move again in the same turn */
+	virtual void TakeTerminalAction();
 
 protected:
 	virtual void BeginPlay() override;
@@ -172,6 +175,10 @@ private:
 	UHealthBarParent* HealthBarObj;
 
 	FTimerHandle ToolTipTimer;
+
+	/** A character can only take further actions if active. After terminal actions, this is set to false, and at the beginning of each turn it is set to true */
+	bool Active = true;
+
 
 };
 

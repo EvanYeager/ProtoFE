@@ -6,6 +6,7 @@
 #include "Actors/TileActor.h"
 #include "Tile.h"
 #include "Components/HighlightComponent.h"
+#include "Components/GridOccupyComponent.h"
 
 
 AEnemyCharacter::AEnemyCharacter() 
@@ -53,6 +54,7 @@ bool AEnemyCharacter::ShouldUnSelect()
 void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
 {
    Super::OnCursorOver(comp);
+   if (!GridOccupyComponent->OccupiedTile) return;
 
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {

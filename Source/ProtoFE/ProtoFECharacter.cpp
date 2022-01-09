@@ -20,6 +20,7 @@
 #include "UI/HealthBarParent.h"
 #include "Components/WidgetComponent.h"
 #include "Items/Weapons/Weapon.h"
+#include "Components/InventoryComponent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
@@ -87,12 +88,13 @@ AProtoFECharacter::AProtoFECharacter()
 	HealthBarComponent->SetRelativeLocation(FVector(0, 0, 200));
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawSize(FVector2D(100, 100));
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
 
 	FWeaponStats Stats = FWeaponStats();
 	Stats.Crit = 0.80;
 	UWeapon* Weapon1 = NewObject<UWeapon>();
 	Weapon1->SetStats(Stats);
-	Inventory.Add(Weapon1);
+	InventoryComponent->GiveItem(Weapon1);
 
 }
 
@@ -111,9 +113,6 @@ void AProtoFECharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// on cursor over
-	// GetMesh()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
-	// GetMesh()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
-
 	GetCapsuleComponent()->OnBeginCursorOver.AddDynamic(this, &AProtoFECharacter::OnCursorOver);
 	GetCapsuleComponent()->OnEndCursorOver.AddDynamic(this, &AProtoFECharacter::EndCursorOver);
 	
@@ -137,6 +136,16 @@ void AProtoFECharacter::Destroyed()
 }
 
 void AProtoFECharacter::Select() {}
+
+void AProtoFECharacter::Wait()
+{
+	TakeTerminalAction();
+}
+
+void AProtoFECharacter::TakeTerminalAction()
+{
+	Active = false;
+}
 
 void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 {

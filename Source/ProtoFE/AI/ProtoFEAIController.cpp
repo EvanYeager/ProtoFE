@@ -7,7 +7,6 @@
 #include "Components/GridOccupyComponent.h"
 
 
-#include "Actors/TileActor.h"
 
 AProtoFEAIController::AProtoFEAIController() 
 {
@@ -20,7 +19,7 @@ void AProtoFEAIController::BeginPlay()
 {
    Super::BeginPlay();
 
-   
+   Char = Cast<AProtoFECharacter>(GetCharacter());   
 }
 
 void AProtoFEAIController::MoveCharacter(TArray<UTile*> path) 
@@ -36,7 +35,6 @@ void AProtoFEAIController::OnMoveFinished()
 {
    if (Path.Num() > 0)
    {
-      AProtoFECharacter* Char = Cast<AProtoFECharacter>(GetCharacter());
       Char->GridOccupyComponent->OccupiedTile = Path[Path.Num() - 1];
    }
 }

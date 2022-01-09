@@ -7,6 +7,7 @@
 #include "ProtoFEAIController.generated.h"
 
 class UTile;
+class AProtoFECharacter;
 
 UCLASS()
 class PROTOFE_API AProtoFEAIController : public AAIController
@@ -25,5 +26,7 @@ protected:
 
 private:
 	class UBehaviorTree* AIBehavior;
+
+	AProtoFECharacter* Char;
 	
 };
