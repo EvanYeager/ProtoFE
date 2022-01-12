@@ -34,6 +34,10 @@ AProtoFEPlayerController::AProtoFEPlayerController()
 	ConstructorHelpers::FClassFinder<UUserWidget> EscMenu(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/EscapeMenu'"));
 	if (EscMenu.Succeeded())
 		EscapeMenuClass = EscMenu.Class;
+
+	ConstructorHelpers::FClassFinder<UUserWidget> TeamList(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/UnitList'"));
+	if (TeamList.Succeeded())
+		TeamListClass = TeamList.Class;
 }
 
 
@@ -89,6 +93,8 @@ void AProtoFEPlayerController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGridManager::StaticClass(), Temp);
 	check(Temp.Num() == 1);
 	GridManager = Cast<AGridManager>(Temp[0]);
+
+	TeamListObj = DisplayWidget(TeamListClass);
 }
 
 void AProtoFEPlayerController::HighlightTile() 

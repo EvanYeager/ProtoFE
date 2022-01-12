@@ -19,7 +19,7 @@
 #include "UI/ToolTipParent.h"
 #include "UI/HealthBarParent.h"
 #include "Components/WidgetComponent.h"
-#include "Items/Weapons/Weapon.h"
+#include "Items/Weapons/IronSword.h"
 #include "Components/InventoryComponent.h"
 
 
@@ -36,7 +36,7 @@ AProtoFECharacter::AProtoFECharacter()
 
 	/** Mesh */
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-	GetMesh()->SetRelativeLocation(FVector(0, 0, -92));
+	GetMesh()->SetRelativeLocation(FVector(0, 0, -95.0f));
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
@@ -92,7 +92,7 @@ AProtoFECharacter::AProtoFECharacter()
 
 	FWeaponStats Stats = FWeaponStats();
 	Stats.Crit = 0.80;
-	UWeapon* Weapon1 = NewObject<UWeapon>();
+	UIronSword* Weapon1 = NewObject<UIronSword>();
 	Weapon1->SetStats(Stats);
 	InventoryComponent->GiveItem(Weapon1);
 

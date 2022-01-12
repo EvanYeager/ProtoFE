@@ -17,7 +17,8 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
+	if (Inventory.Num() > 0)
+		UE_LOG(LogTemp, Warning, TEXT("hello"));
 	
 }
 

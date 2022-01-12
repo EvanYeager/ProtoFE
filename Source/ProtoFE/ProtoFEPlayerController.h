@@ -49,6 +49,7 @@ public:
 	UUserWidget* DisplayWidget(TSubclassOf<UUserWidget> WidgetClass);
 	void RemoveWidget(UUserWidget* Widget);
 
+	UFUNCTION(BlueprintCallable)
 	void FocusCharacter(APlayerCharacter* Char);
 
 	/** Adds an enemy character for highlighted enemy range */
@@ -104,6 +105,10 @@ private:
 	TSubclassOf<UUserWidget> EscapeMenuClass;
 	UPROPERTY()
 	UUserWidget* EscapeMenuObj;
+	UPROPERTY()
+	TSubclassOf<UUserWidget> TeamListClass;
+	UPROPERTY()
+	UUserWidget* TeamListObj;
 
 	void HighlightTile();
 

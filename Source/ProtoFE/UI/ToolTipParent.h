@@ -20,7 +20,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	FLinearColor BackgroundColor = FLinearColor(.01, .01, .01, .9);
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	AProtoFECharacter* FocusedChar;
 
 	UFUNCTION(BlueprintCallable)
