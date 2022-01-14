@@ -31,7 +31,11 @@ void UCameraControllerComponent::TickComponent(float DeltaTime, ELevelTick TickT
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (IsFocused && FocusedActor.GetObject())
+	{
+		AActor* focusedActor = Cast<AActor>(FocusedActor.GetObject());
+		FocusLocation(focusedActor->GetActorLocation());
+	}
 }
 
 void UCameraControllerComponent::MoveCameraUp(float Value)
@@ -86,6 +90,7 @@ void UCameraControllerComponent::FocusLocation(FVector Location)
 void UCameraControllerComponent::FocusActor(TScriptInterface<IFocusable> FocusableActor)
 {
 	IsFocused = true;
+	FocusedActor = FocusableActor;
 	AActor* TheActor = Cast<AActor>(FocusableActor.GetObject());
 	FocusLocation(TheActor->GetActorLocation());
 }

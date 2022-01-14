@@ -29,8 +29,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
 	float CameraZoomUpperBound = 1400.0f; // The camera cannot get further away than this distance from the ground
 
-	/** if the camera is focused on a unit. When focused, the camera will stay focused on the unit */
-	bool IsFocused = false;
+	TScriptInterface<IFocusable> FocusedActor;
 
 	void MoveCameraUp(float Value);
 	void MoveCameraRight(float Value);
@@ -63,6 +62,6 @@ private:
 
 	float CalculateMoveSpeed(float Value);
 
-	void ResetDoubleClick();
+	bool IsFocused = false;
 	
 };
