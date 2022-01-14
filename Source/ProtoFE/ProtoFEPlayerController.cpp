@@ -20,6 +20,7 @@
 #include "AI/ProtoFEAIController.h"
 #include "Interfaces/Commandable.h"
 #include "ConstructorHelpers.h"
+#include "Interfaces/Focusable.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -137,12 +138,6 @@ void AProtoFEPlayerController::SetSelectedActor(TScriptInterface<ISelectable> Ac
 	SelectedActor = Actor;
 }
 
-
-void AProtoFEPlayerController::FocusCharacter(APlayerCharacter* Char)
-{
-	CameraController->FocusLocation(Char->GetActorLocation());
-}
-
 void AProtoFEPlayerController::AddHighlightedTiles(AEnemyCharacter* Char) 
 {
 	// set red highlight in character range
@@ -219,8 +214,22 @@ void AProtoFEPlayerController::OnLeftClick()
 	FHitResult Hit;
 	if (GetHitResultUnderCursor(ECC_Visibility, false, Hit)) // if click hit something
 	{
-		if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be focused
+		if (ISelectable* ActorClicked = Cast<ISelectable>(Hit.GetActor())) // if click hit something that can be selected
 			ActorClicked->HandleSelection();
+
+
+		if (IFocusable* FocusableActor = Cast<IFocusable>(Hit.GetActor())) // if click hit something that can be focused by the camera
+		{
+			if (ClickedRecently) // if this click is a double click
+			{
+				FocusableActor->Focus();
+			}
+			else
+			{
+				ClickedRecently = true;
+				GetWorld()->GetTimerManager().SetTimer(DoubleClickTimer, this, &AProtoFEPlayerController::DoubleClickReset, DoubleClickDelay, false);
+			}
+		}
 	}
 }
 
@@ -276,5 +285,10 @@ void AProtoFEPlayerController::SetAltMode()
 void AProtoFEPlayerController::SetNormalMode()
 {
 	DisplayMode = EDisplayMode::Normal;
+}
+
+void AProtoFEPlayerController::DoubleClickReset() 
+{
+	ClickedRecently = false;
 }
 

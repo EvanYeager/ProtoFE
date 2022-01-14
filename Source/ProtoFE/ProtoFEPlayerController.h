@@ -14,6 +14,7 @@ class UTile;
 class AEnemyCharacter;
 class AProtoFECharacter;
 class ISelectable;
+class IFocusable;
 
 USTRUCT(BlueprintType)
 struct FEnemyRange
@@ -48,9 +49,6 @@ public:
 	
 	UUserWidget* DisplayWidget(TSubclassOf<UUserWidget> WidgetClass);
 	void RemoveWidget(UUserWidget* Widget);
-
-	UFUNCTION(BlueprintCallable)
-	void FocusCharacter(APlayerCharacter* Char);
 
 	/** Adds an enemy character for highlighted enemy range */
 	void AddHighlightedTiles(AEnemyCharacter* Char);
@@ -109,6 +107,12 @@ private:
 	TSubclassOf<UUserWidget> TeamListClass;
 	UPROPERTY()
 	UUserWidget* TeamListObj;
+
+	/** for double click logic. */
+	bool ClickedRecently = false;
+	float DoubleClickDelay = 0.4f;
+	FTimerHandle DoubleClickTimer;
+	void DoubleClickReset();
 
 	void HighlightTile();
 

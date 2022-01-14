@@ -2,6 +2,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Actors/ProtoFECamera.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "ProtoFECharacter.h"
+#include "Interfaces/Focusable.h"
 
 // Sets default values for this component's properties
 UCameraControllerComponent::UCameraControllerComponent()
@@ -42,6 +44,7 @@ void UCameraControllerComponent::MoveCameraUp(float Value)
 	float PercentZ = Pitch / 90;
 	float PercentX = 1 - PercentZ;
 	CameraActor->AddActorLocalOffset(FVector(PercentX * Speed, 0, PercentZ * Speed));
+	IsFocused = false;
 }
 
 void UCameraControllerComponent::MoveCameraRight(float Value)
@@ -50,6 +53,7 @@ void UCameraControllerComponent::MoveCameraRight(float Value)
 
 	float Speed = CalculateMoveSpeed(Value);
 	CameraActor->AddActorLocalOffset(FVector(0, Speed, 0));
+	IsFocused = false;
 }
 
 void UCameraControllerComponent::ZoomCameraIn()
@@ -77,6 +81,13 @@ void UCameraControllerComponent::SetNormalSpeed()
 void UCameraControllerComponent::FocusLocation(FVector Location)
 {
 	CameraActor->SetActorLocation(FVector(Location.X, Location.Y, CameraActor->GetActorLocation().Z));
+}
+
+void UCameraControllerComponent::FocusActor(TScriptInterface<IFocusable> FocusableActor)
+{
+	IsFocused = true;
+	AActor* TheActor = Cast<AActor>(FocusableActor.GetObject());
+	FocusLocation(TheActor->GetActorLocation());
 }
 
 void UCameraControllerComponent::SetNormalCameraPanSpeed(float Speed)

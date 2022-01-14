@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "ProtoFECharacter.h"
 #include "Interfaces/Commandable.h"
+#include "Interfaces/Focusable.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
-class PROTOFE_API APlayerCharacter : public AProtoFECharacter, public ICommandable
+class PROTOFE_API APlayerCharacter : public AProtoFECharacter, public ICommandable, public IFocusable
 {
 	GENERATED_BODY()
 

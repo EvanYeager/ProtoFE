@@ -5,6 +5,8 @@
 #include "CameraControllerComponent.generated.h"
 
 class AProtoFECamera;
+class AProtoFECharacter;
+class IFocusable;
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -27,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
 	float CameraZoomUpperBound = 1400.0f; // The camera cannot get further away than this distance from the ground
 
+	/** if the camera is focused on a unit. When focused, the camera will stay focused on the unit */
+	bool IsFocused = false;
+
 	void MoveCameraUp(float Value);
 	void MoveCameraRight(float Value);
 	void ZoomCameraIn();
@@ -36,6 +41,8 @@ public:
 	void RotateCamera(float Value);
 	
 	void FocusLocation(FVector Location);
+	UFUNCTION(BlueprintCallable)
+	void FocusActor(TScriptInterface<IFocusable> FocusableActor);
 
 	UFUNCTION(BlueprintCallable)
 	void SetNormalCameraPanSpeed(float Speed = 1.0f);
@@ -55,5 +62,7 @@ private:
 	float CurrentCameraPanSpeed = NormalCameraPanMultiplier;
 
 	float CalculateMoveSpeed(float Value);
+
+	void ResetDoubleClick();
 	
 };
