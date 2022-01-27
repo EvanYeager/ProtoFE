@@ -127,6 +127,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FCharacterInfo Information = FCharacterInfo();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int RemainingMovement = Information.Movement;
+
 	UPROPERTY(VisibleAnywhere)
 	UInventoryComponent* InventoryComponent;
 

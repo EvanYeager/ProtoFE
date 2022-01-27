@@ -55,8 +55,8 @@ void APlayerCharacter::ExecuteCommand()
 {
    if (AProtoFEAIController* AIController = Cast<AProtoFEAIController>(GetController()))
    {
-
       AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+      if (PlayerController->Path.Num() < 1) return;
       AIController->MoveCharacter(PlayerController->Path);
    }
 }

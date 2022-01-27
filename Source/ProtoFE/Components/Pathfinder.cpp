@@ -72,7 +72,7 @@ TArray<UTile*> UPathfinder::BreadthSearch(AProtoFECharacter* CharacterCalling, T
 {
 	ClearMemberVariables();
 	CharacterPathfinding = CharacterCalling;
-	MaxMovement = CharacterCalling->Information.Movement;
+	MaxMovement = CharacterCalling->RemainingMovement;
 	NumOfPossibleTiles = GetMovementOptionArea(MaxMovement + 1); // The + 1 is so it will search for the red highlights
 	IsPlayerPathfinding = CharacterCalling->Information.Team == ETeam::Player;
 	UTile* StartTile = CharacterCalling->GridOccupyComponent->OccupiedTile;

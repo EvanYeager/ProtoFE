@@ -84,6 +84,8 @@ void AProtoFEPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Undo", IE_Pressed, this, &AProtoFEPlayerController::ToggleEscapeMenu);
 	InputComponent->BindAction("Alt", IE_Pressed, this, &AProtoFEPlayerController::SetAltMode);
 	InputComponent->BindAction("Alt", IE_Released, this, &AProtoFEPlayerController::SetNormalMode);
+	InputComponent->BindAction("Debug", IE_Pressed, this, &AProtoFEPlayerController::Debug);
+	
 }
 
 void AProtoFEPlayerController::BeginPlay() 
@@ -292,3 +294,13 @@ void AProtoFEPlayerController::DoubleClickReset()
 	ClickedRecently = false;
 }
 
+void AProtoFEPlayerController::Debug()
+{
+	if (GetSelectedActor())
+	{
+		if (AProtoFECharacter* Char = Cast<AProtoFECharacter>(GetSelectedActor().GetObject()))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%i"), Char->RemainingMovement);
+		}
+	}
+} 

@@ -6,6 +6,7 @@
 #include "Interfaces/Focusable.h"
 #include "PlayerCharacter.generated.h"
 
+
 UCLASS(Blueprintable)
 class PROTOFE_API APlayerCharacter : public AProtoFECharacter, public ICommandable, public IFocusable
 {

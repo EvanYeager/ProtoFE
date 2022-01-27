@@ -28,6 +28,8 @@ void AProtoFEAIController::MoveCharacter(TArray<UTile*> path)
    {
       this->Path = path;
       RunBehaviorTree(AIBehavior);
+      // subtract remaining movement
+      Cast<AProtoFECharacter>(GetPawn())->RemainingMovement -= path[path.Num() - 1]->FinalCost - 1;
    }
 }
 

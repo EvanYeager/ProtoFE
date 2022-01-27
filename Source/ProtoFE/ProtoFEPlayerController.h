@@ -16,6 +16,9 @@ class AProtoFECharacter;
 class ISelectable;
 class IFocusable;
 
+// DECLARE_MULTICAST_DELEGATE_OneParam(FPlayerDeath, APlayerCharacter*, DeadPlayer);
+
+
 USTRUCT(BlueprintType)
 struct FEnemyRange
 {
@@ -84,6 +87,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ToolTipDelay = 0.5f;
+
+	// UPROPERTY(BlueprintAssignable)
+	// FPlayerDeath OnPlayerDeathDelegate;
+
 	
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
@@ -128,6 +135,8 @@ private:
 	void HandleCameraRotate(float Value);
 	void SetAltMode();
 	void SetNormalMode();
+
+	void Debug();
 };
 
 
