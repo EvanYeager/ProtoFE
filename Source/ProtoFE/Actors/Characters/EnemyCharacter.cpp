@@ -59,7 +59,7 @@ void AEnemyCharacter::OnCursorOver(UPrimitiveComponent* comp)
    if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
    {
       // if I decide I want this is I can uncomment it
-      // if (PlayerController->GetSelectedActor()) return;
+      if (PlayerController->GetSelectedActor()) return;
       if (!IsSelected)
       {
          BreadthSearch();

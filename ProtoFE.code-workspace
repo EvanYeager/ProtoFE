@@ -8,20 +8,6 @@
 		}
 	],
 	"settings": {
-		"typescript.tsc.autoDetect": "off",
-		"files.associations": {
-			"*.ahk": "ahk",
-			"bitset": "cpp",
-			"set": "cpp",
-			"__tree": "cpp",
-			"deque": "cpp",
-			"iterator": "cpp",
-			"list": "cpp",
-			"map": "cpp",
-			"queue": "cpp",
-			"stack": "cpp",
-			"vector": "cpp",
-			"xtree": "cpp"
-		}
+		"typescript.tsc.autoDetect": "off"
 	}
 }

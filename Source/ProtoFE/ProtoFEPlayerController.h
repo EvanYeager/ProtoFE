@@ -18,7 +18,6 @@ class IFocusable;
 
 // DECLARE_MULTICAST_DELEGATE_OneParam(FPlayerDeath, APlayerCharacter*, DeadPlayer);
 
-
 USTRUCT(BlueprintType)
 struct FEnemyRange
 {
@@ -92,6 +91,8 @@ public:
 	// FPlayerDeath OnPlayerDeathDelegate;
 
 	
+
+	
 protected:
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
@@ -111,9 +112,9 @@ private:
 	UPROPERTY()
 	UUserWidget* EscapeMenuObj;
 	UPROPERTY()
-	TSubclassOf<UUserWidget> TeamListClass;
+	TSubclassOf<UUserWidget> CombatUIClass;
 	UPROPERTY()
-	UUserWidget* TeamListObj;
+	UUserWidget* CombatUIObj;
 
 	/** for double click logic. */
 	bool ClickedRecently = false;
@@ -127,6 +128,8 @@ private:
 	void ResetEnemyTiles(TArray<UTile*> Tiles);
 
 	bool ShouldPathfind();
+	/** Gets the tile the selected character should move to */
+	UTile* GetTargetTile();
 	
 	void OnLeftClick();
 	void OnRightClick();
@@ -136,6 +139,7 @@ private:
 	void SetAltMode();
 	void SetNormalMode();
 
+	AActor* GetActorUnderCursor();
 	void Debug();
 };
 

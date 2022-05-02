@@ -5,3 +5,11 @@
 #include "CoreMinimal.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogProtoFE, Log, All);
+
+UENUM(BlueprintType)
+enum class EAbilityInput : uint8
+{
+   None UMETA(DisplayName="None"),
+   Confirm UMETA(DisplayName="Confirm"),
+   Cancel UMETA(DisplayName="Cancel")
+};

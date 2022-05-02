@@ -8,11 +8,13 @@
 #include "Components/GridOccupyComponent.h"
 #include "Components/HighlightComponent.h"
 #include "AI/ProtoFEAIController.h"
+#include "Abilities/Ability.h"
 
 APlayerCharacter::APlayerCharacter() 
 {
    Information.Team = ETeam::Player;
    Information.Name = TEXT("Player Character");
+
 }
 
 void APlayerCharacter::Select() 
@@ -21,14 +23,13 @@ void APlayerCharacter::Select()
    {
       if (!GridOccupyComponent->OccupiedTile) return;
 
-      // PlayerController->FocusCharacter(this);
-
       PlayerController->SetSelectedActor(this);
 
       TArray<AProtoFECharacter*> Chars;
       MovementArea = PlayerController->Pathfinder->BreadthSearch(this, AttackRangeTiles, Chars);
 
       HighlightTiles();
+      PlayerSelected.Broadcast(this);
    }
 }
 

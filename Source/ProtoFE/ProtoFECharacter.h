@@ -6,6 +6,9 @@
 #include "Interfaces/GridOccupy.h"
 #include "Interfaces/Selectable.h"
 #include "Interfaces/Hoverable.h"
+#include "Interfaces/Damageable.h"
+#include "AbilitySystemInterface.h"
+#include "Components/SphereComponent.h"
 #include "ProtoFECharacter.generated.h"
 
 class USnapToGrid;
@@ -17,6 +20,11 @@ class UUserWidget;
 class UWidgetComponent;
 class UItem;
 class UInventoryComponent;
+class UAbility;
+class UMyGameplayAbility;
+class UMyAbilitySystemComponent;
+class UMyAttributeSet;
+class UAbilityComponent;
 
 USTRUCT(BlueprintType)
 struct FCharacterStats
@@ -58,6 +66,7 @@ struct FCharacterStats
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Resistance = 2;
 
+	/* TODO move level and exp into FCharacterInfo */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Level = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -107,7 +116,7 @@ struct FCharacterInfo
 };
 
 UCLASS(Abstract)
-class AProtoFECharacter : public ACharacter, public IGridOccupy, public ISelectable, public IHoverable
+class AProtoFECharacter : public ACharacter, public IGridOccupy, public ISelectable, public IHoverable, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -130,13 +139,31 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int RemainingMovement = Information.Movement;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	// Action Points
+	int AP = 4;
+
 	UPROPERTY(VisibleAnywhere)
 	UInventoryComponent* InventoryComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UAbilityComponent* AbilityComponent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<ETerrain, int> TerrainMoveCost;
 
+	UPROPERTY()
 	TArray<UTile*> MovementArea;
+	
+	// UPROPERTY()
+	// UMyAttributeSet* Attributes;
+
+	// UPROPERTY(BlueprintReadOnly)
+	// TArray<UAbility*> LearnedAbilities;
+	// UPROPERTY(BlueprintReadOnly)
+	// TMap<int, UAbility*> EquippedAbilities;
+	// // starting at 1
+	// int NumOfSlots = 9;
 
 	virtual void BreadthSearch();
 
@@ -149,38 +176,54 @@ public:
 	/** makes the character unable to move again in the same turn */
 	virtual void TakeTerminalAction();
 
+	virtual void TakeDamage(int Damage) override;
+
+	// virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostEditMove(bool bFinished) override;
 	virtual void Destroyed() override;
 
 	UFUNCTION()
-	virtual void OnCursorOver(UPrimitiveComponent* comp) override;
+	virtual void OnCursorOver(UPrimitiveComponent* Comp) override;
 	UFUNCTION()
-	virtual void EndCursorOver(UPrimitiveComponent* comp) override;
-	UFUNCTION()
+	virtual void EndCursorOver(UPrimitiveComponent* Comp) override;
 	virtual void DisplayStats();
-	UFUNCTION()
 	virtual void RemoveStats();
-	UFUNCTION()
 	virtual void CreateToolTipWindow() override;
+
+	// virtual void PossessedBy(AController* NewController) override;
+	// virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	// virtual void AddStartupGameplayAbilities();
+
+	
 private:
 
 	void RemoveToolTip();
+	// void InitAbilities();
 
 	TSubclassOf<UUserWidget> StatsWindowClass;
+	UPROPERTY()
 	UStatsWindowParent* StatsWindowWidget;
 
 	TSubclassOf<UUserWidget> ToolTipClass;
+	UPROPERTY()
 	UToolTipParent* ToolTipObj;
 
 	TSubclassOf<UUserWidget> HealthBarClass;
+	UPROPERTY()
 	UHealthBarParent* HealthBarObj;
 
 	FTimerHandle ToolTipTimer;
 
 	/** A character can only take further actions if active. After terminal actions, this is set to false, and at the beginning of each turn it is set to true */
 	bool Active = true;
+
+	// UPROPERTY()
+	// UMyAbilitySystemComponent* AbilitySystemComponent;
+	//
+	// bool AbilitiesInitialized = false;
 
 
 };

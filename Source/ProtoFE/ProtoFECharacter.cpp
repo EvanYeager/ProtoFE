@@ -1,4 +1,5 @@
 #include "ProtoFECharacter.h"
+#include "ProtoFEData.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,12 +16,17 @@
 #include "tile.h"
 #include "AI/ProtoFEAIController.h"
 #include "Components/ArrowComponent.h"
-#include "ConstructorHelpers.h"
+#include "TimerManager.h"
 #include "UI/ToolTipParent.h"
 #include "UI/HealthBarParent.h"
 #include "Components/WidgetComponent.h"
 #include "Items/Weapons/IronSword.h"
 #include "Components/InventoryComponent.h"
+#include "Abilities/Ability.h"
+#include "Abilities/Ability_Slash.h"
+#include "Abilities/MyAbilitySystemComponent.h"
+#include "Abilities/MyAttributeSet.h"
+#include "Components/AbilityComponent.h"
 
 
 AProtoFECharacter::AProtoFECharacter()
@@ -52,8 +58,7 @@ AProtoFECharacter::AProtoFECharacter()
 	// lul
 	// GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
 	// GetCharacterMovement()->MaxAcceleration = 6000.0f;
-
-
+	
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -89,13 +94,18 @@ AProtoFECharacter::AProtoFECharacter()
 	HealthBarComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	HealthBarComponent->SetDrawSize(FVector2D(100, 100));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
+	AbilityComponent = CreateDefaultSubobject<UAbilityComponent>(TEXT("Ability Component"));
 
+	// inventory
 	FWeaponStats Stats = FWeaponStats();
 	Stats.Crit = 0.80;
 	UIronSword* Weapon1 = NewObject<UIronSword>();
 	Weapon1->SetStats(Stats);
 	InventoryComponent->GiveItem(Weapon1);
 
+	// abilities
+	AbilityComponent->GiveAbility(UAbility_Slash::StaticClass());
+	
 }
 
 void AProtoFECharacter::PostEditMove(bool bFinished)
@@ -147,7 +157,7 @@ void AProtoFECharacter::TakeTerminalAction()
 	Active = false;
 }
 
-void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
+void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* Comp)
 {
 	DisplayStats();
 	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
@@ -156,7 +166,7 @@ void AProtoFECharacter::OnCursorOver(UPrimitiveComponent* comp)
 	}
 }
 
-void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* comp)
+void AProtoFECharacter::EndCursorOver(UPrimitiveComponent* Comp)
 {
 	RemoveStats();
 	GetWorld()->GetTimerManager().ClearTimer(ToolTipTimer);
@@ -207,11 +217,21 @@ void AProtoFECharacter::CreateToolTipWindow()
 		ToolTipObj->FocusedChar = this;
 	}
 }
- 
+
+
 void AProtoFECharacter::RemoveToolTip()
 {
 	if (AProtoFEPlayerController* PlayerController = Cast<AProtoFEPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
 	{
 		PlayerController->RemoveWidget(ToolTipObj);
 	}
+}
+
+void AProtoFECharacter::TakeDamage(int Damage)
+{
+	Information.Stats.CurrentHealth = FMath::Clamp<int>(
+		Information.Stats.CurrentHealth - Damage, 
+		0, 
+		Information.Stats.CurrentHealth
+	);
 }

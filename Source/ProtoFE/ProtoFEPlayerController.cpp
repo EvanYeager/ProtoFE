@@ -1,3 +1,4 @@
+// ReSharper disable All
 #include "ProtoFEPlayerController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "ProtoFECharacter.h"
@@ -20,7 +21,9 @@
 #include "AI/ProtoFEAIController.h"
 #include "Interfaces/Commandable.h"
 #include "ConstructorHelpers.h"
+#include "Abilities/Ability.h"
 #include "Interfaces/Focusable.h"
+#include "Components/AbilityComponent.h"
 
 AProtoFEPlayerController::AProtoFEPlayerController()
 {
@@ -36,9 +39,9 @@ AProtoFEPlayerController::AProtoFEPlayerController()
 	if (EscMenu.Succeeded())
 		EscapeMenuClass = EscMenu.Class;
 
-	ConstructorHelpers::FClassFinder<UUserWidget> TeamList(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/UnitList'"));
-	if (TeamList.Succeeded())
-		TeamListClass = TeamList.Class;
+	ConstructorHelpers::FClassFinder<UUserWidget> CombatUI(TEXT("WidgetBlueprint'/Game/TopDownCPP/Blueprints/Widgets/CombatUI'"));
+	if (CombatUI.Succeeded())
+		CombatUIClass = CombatUI.Class;
 }
 
 
@@ -49,15 +52,16 @@ void AProtoFEPlayerController::PlayerTick(float DeltaTime)
 
 	HighlightTile();
 	// pathfinding - should I put this in another place?
-	if (ShouldPathfind()) 
+	if (ShouldPathfind())
 	{
 		HighlightComponent->ResetPath();
 
 		APlayerCharacter* SelectedChar = Cast<APlayerCharacter>(GetSelectedActor().GetObject()); // we know with the "if (ShouldPathfind())" that the selected actor is a player character
+		UTile* TargetTile = GetTargetTile();
 		Path = Pathfinder->FindPathToTarget(
 			SelectedChar->MovementArea, 
 			SelectedChar->GridOccupyComponent->OccupiedTile, 
-			SelectedTile
+			TargetTile
 		);
 		HighlightComponent->HighlightPath();
 	}
@@ -97,7 +101,7 @@ void AProtoFEPlayerController::BeginPlay()
 	check(Temp.Num() == 1);
 	GridManager = Cast<AGridManager>(Temp[0]);
 
-	TeamListObj = DisplayWidget(TeamListClass);
+	CombatUIObj = DisplayWidget(CombatUIClass);
 }
 
 void AProtoFEPlayerController::HighlightTile() 
@@ -198,12 +202,48 @@ bool AProtoFEPlayerController::ShouldPathfind()
 	if (APlayerCharacter* SelectedChar = Cast<APlayerCharacter>(GetSelectedActor().GetObject()))
 	{
 		return SelectedChar // selected actor is a player character 
-		&& SelectedTile // cursor is on the grid
-		&& PreviousTile != SelectedTile // cursor moved to a new tile
-		&& (SelectedChar->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
-			|| SelectedTile == SelectedChar->GridOccupyComponent->OccupiedTile);
+		&& (SelectedTile // cursor is on the grid
+			&& PreviousTile != SelectedTile // cursor moved to a new tile
+			&& (SelectedChar->MovementArea.Contains(SelectedTile)  // selected tile is in character's movement range or occupied tile
+				|| SelectedTile == SelectedChar->GridOccupyComponent->OccupiedTile))
+		|| Cast<AEnemyCharacter>(GetActorUnderCursor()); // cursor is on enemy
 	}
 	return false;
+}
+
+UTile* AProtoFEPlayerController::GetTargetTile()
+{
+	if (!GetSelectedActor()) goto QUICKRETURN;
+	if (APlayerCharacter* PlayerSelected = Cast<APlayerCharacter>(GetSelectedActor().GetObject()))
+	{
+		if (!GetActorUnderCursor()) goto QUICKRETURN;
+		if (AEnemyCharacter* EnemyUnderCursor = Cast<AEnemyCharacter>(GetActorUnderCursor()))
+		{
+			// get tiles next to enemy
+			TArray<UTile*> AdjacentTiles = Pathfinder->GetTileNeighbors(EnemyUnderCursor->GridOccupyComponent->OccupiedTile); 
+			
+			// find closest adjacent tile to character
+			UTile* ClosestTile = AdjacentTiles[0];
+			int ClosestTileCost = 999;
+			for (UTile* Tile : AdjacentTiles)
+			{
+				TArray<UTile*> Path = Pathfinder->FindPathToTarget(PlayerSelected->MovementArea, 
+					PlayerSelected->GridOccupyComponent->OccupiedTile, 
+					Tile
+				);
+				if (Path.Num() == 0) continue;
+				int TileCost = Path[Path.Num() - 1]->FinalCost - 1;
+				if (TileCost < ClosestTileCost)
+				{
+					ClosestTileCost = TileCost;
+					ClosestTile = Tile;
+				}
+			}
+	
+			return ClosestTile;
+		}
+	}
+	QUICKRETURN: return SelectedTile;
 }
 
 void AProtoFEPlayerController::OnLeftClick() 
@@ -229,7 +269,12 @@ void AProtoFEPlayerController::OnLeftClick()
 			else
 			{
 				ClickedRecently = true;
-				GetWorld()->GetTimerManager().SetTimer(DoubleClickTimer, this, &AProtoFEPlayerController::DoubleClickReset, DoubleClickDelay, false);
+				GetWorld()->GetTimerManager().SetTimer(DoubleClickTimer, 
+					this, 
+					&AProtoFEPlayerController::DoubleClickReset, 
+					DoubleClickDelay, 
+					false
+				);
 			}
 		}
 	}
@@ -239,10 +284,13 @@ void AProtoFEPlayerController::OnRightClick()
 {
 	if (GetSelectedActor())
 	{
-		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedActor().GetObject()))
+		AActor* ActorUnderCursor = GetActorUnderCursor();
+		if (ActorUnderCursor && Cast<AEnemyCharacter>(ActorUnderCursor))
 		{
-			SelectedAsCommandable->ExecuteCommand();
+			// move next to enemy and attack 
 		}
+		if (ICommandable* SelectedAsCommandable = Cast<ICommandable>(GetSelectedActor().GetObject()))
+			SelectedAsCommandable->ExecuteCommand();
 		if (GetSelectedActor()->ShouldUnSelect())
 			GetSelectedActor()->UnSelect();
 	}
@@ -294,13 +342,23 @@ void AProtoFEPlayerController::DoubleClickReset()
 	ClickedRecently = false;
 }
 
+AActor* AProtoFEPlayerController::GetActorUnderCursor()
+{
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+	return Hit.GetActor();
+}
+
 void AProtoFEPlayerController::Debug()
 {
-	if (GetSelectedActor())
+	if (SelectedActor)
 	{
-		if (AProtoFECharacter* Char = Cast<AProtoFECharacter>(GetSelectedActor().GetObject()))
+		UAbility* Ability = *Cast<AProtoFECharacter>(SelectedActor.GetObject())->AbilityComponent->GetAbilityHotbar().Find(1);
+		if (!Ability) 
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%i"), Char->RemainingMovement);
+			UE_LOG(LogTemp, Warning, TEXT("no ablility on unit"));
+			return;
 		}
+		Ability->Activate();
 	}
 } 

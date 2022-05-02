@@ -5,6 +5,8 @@
 .vs/
 .vscode/
 
+.idea/*
+
 # Compiled Object files
 *.slo
 *.lo
